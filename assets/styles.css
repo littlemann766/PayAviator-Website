@@ -688,3 +688,6 @@ dialog.lightbox{display:none}
   html.menu-open{overflow:hidden}  /* html only: overflow on body would make it a scroll container and unstick the header */
 }
 @media (prefers-reduced-motion:reduce){.navlinks,.nav-scrim{transition:none!important}}
+
+/* Footer: show the site address as plain text */
+.foot-domain{color:#c9d4e3;font-weight:800;letter-spacing:.01em;white-space:nowrap}
