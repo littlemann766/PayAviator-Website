@@ -24,7 +24,7 @@
 <meta name="twitter:image:alt" content="PayAviator: Take control of your money. App screens showing spending and safe-to-spend.">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/styles.css?v=202610111538">
+<link rel="stylesheet" href="assets/styles.css?v=202610111600">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -302,13 +302,15 @@
           <h2>Connected financial accounts</h2>
           <p>PayAviator uses Plaid to let users connect supported financial institutions. When a user chooses to connect an account, PayAviator may access account and balance information and transaction information made available through Plaid so the app can display financial activity and support budgeting and money-management features.</p>
           <p>PayAviator does not ask users to provide their online-banking password directly to PayAviator. Account connections are initiated through Plaid. Users control whether they connect an account and can disconnect connected accounts.</p>
+          <p>Connecting an account requires a PayAviator account (sign in with Google or email). Bills you add stay on your phone. Connected bank data (synced transactions and connection details) is stored on PayAviator's servers so it can sync. Plaid access tokens are encrypted there and never sent to your phone, and deleting your PayAviator account removes your bank connections at Plaid and deletes that stored data.</p>
           <p>For more information, read the <a href="privacy.html">PayAviator Privacy Policy</a>.</p>
         </div>
         <div class="flow" aria-label="How connecting an account works">
           <div><span>1</span>You choose to connect (optional)</div>
-          <div><span>2</span>Sign in through Plaid</div>
-          <div><span>3</span>Account, balance &amp; transaction info shown in PayAviator</div>
-          <div><span>4</span>Disconnect any time</div>
+          <div><span>2</span>Sign in to your PayAviator account</div>
+          <div><span>3</span>Sign in to your bank through Plaid</div>
+          <div><span>4</span>Account, balance &amp; transaction info shown in PayAviator</div>
+          <div><span>5</span>Disconnect any time</div>
         </div>
       </div>
     </div>
@@ -325,7 +327,7 @@
     </div>
     <div class="faq reveal" id="faqList">
       <div class="faq-item"><h3><button aria-expanded="false" aria-controls="q1" id="q1b">Do I have to connect a bank account?<span class="pm" aria-hidden="true"></span></button></h3>
-        <div class="faq-panel" id="q1" role="region" aria-labelledby="q1b"><div><p>No. Connecting a financial account is optional. You can enter bills, income, budgets and debts yourself, and you can disconnect connected accounts at any time.</p></div></div></div>
+        <div class="faq-panel" id="q1" role="region" aria-labelledby="q1b"><div><p>No. Connecting a financial account is optional. You can enter bills, income, budgets and debts yourself without a PayAviator account. An account (Google or email sign-in) is only needed to connect a bank, and you can disconnect connected accounts at any time.</p></div></div></div>
       <div class="faq-item"><h3><button aria-expanded="false" aria-controls="q8" id="q8b">How is Safe to Spend calculated?<span class="pm" aria-hidden="true"></span></button></h3>
         <div class="faq-panel" id="q8" role="region" aria-labelledby="q8b"><div><p>Safe to Spend starts from Available now, the available balance of the checking and cash accounts you include. It then subtracts your Payday Cushion, which is a percentage of your most recent paycheck (20% by default) or a dollar amount you set. Savings accounts are protected by default; turn on "Include savings in Safe to Spend" to count them. The result never goes below $0. Without connected accounts, Available now comes from PayAviator's own records of checks and funds received, minus paid bills, manual spending and savings.</p></div></div></div>
       <div class="faq-item"><h3><button aria-expanded="false" aria-controls="q2" id="q2b">Does PayAviator see my online-banking password?<span class="pm" aria-hidden="true"></span></button></h3>
@@ -337,9 +339,9 @@
       <div class="faq-item"><h3><button aria-expanded="false" aria-controls="q5" id="q5b">Is PayAviator financial advice?<span class="pm" aria-hidden="true"></span></button></h3>
         <div class="faq-panel" id="q5" role="region" aria-labelledby="q5b"><div><p>No. PayAviator does not provide financial, investment, tax, legal, or credit advice. Calculations, projections, payoff estimates, budgets, and safe-to-spend figures are informational estimates.</p></div></div></div>
       <div class="faq-item"><h3><button aria-expanded="false" aria-controls="q6" id="q6b">Where can I download PayAviator?<span class="pm" aria-hidden="true"></span></button></h3>
-        <div class="faq-panel" id="q6" role="region" aria-labelledby="q6b"><div><p>Download links are coming soon. In the meantime, reach out at <a href="mailto:littlemann76@gmail.com">littlemann76@gmail.com</a>.</p></div></div></div>
+        <div class="faq-panel" id="q6" role="region" aria-labelledby="q6b"><div><p>Download links are coming soon. In the meantime, reach out at <a href="mailto:support@payaviator.app">support@payaviator.app</a>.</p></div></div></div>
       <div class="faq-item"><h3><button aria-expanded="false" aria-controls="q7" id="q7b">How do I get support?<span class="pm" aria-hidden="true"></span></button></h3>
-        <div class="faq-panel" id="q7" role="region" aria-labelledby="q7b"><div><p>Email <a href="mailto:littlemann76@gmail.com">littlemann76@gmail.com</a> with any support or privacy questions.</p></div></div></div>
+        <div class="faq-panel" id="q7" role="region" aria-labelledby="q7b"><div><p>Email <a href="mailto:support@payaviator.app">support@payaviator.app</a> with any support or privacy questions.</p></div></div></div>
     </div>
   </div>
 </section>
@@ -358,7 +360,7 @@
         <a class="store" href="#" aria-disabled="true" data-soon aria-label="App Store, coming soon"><span aria-hidden="true" style="font-size:22px">📱</span><span>Download on the<b>App Store <span class="soon">SOON</span></b></span></a>
         <a class="store" href="#" aria-disabled="true" data-soon aria-label="Google Play, coming soon"><span aria-hidden="true" style="font-size:22px">▶</span><span>Get it on<b>Google Play <span class="soon">SOON</span></b></span></a>
       </div>
-      <p style="margin:18px auto 0;font-size:15px">Questions? <a href="mailto:littlemann76@gmail.com" style="color:#fff;font-weight:800">littlemann76@gmail.com</a></p>
+      <p style="margin:18px auto 0;font-size:15px">Questions? <a href="mailto:support@payaviator.app" style="color:#fff;font-weight:800">support@payaviator.app</a></p>
     </div>
   </div>
 </section>
@@ -367,10 +369,10 @@
 <footer>
   <div class="wrap foot">
     <a class="brand" href="index.html"><picture><source srcset="assets/logo-64.webp" type="image/webp"><img src="assets/logo-64.png" alt="" width="42" height="42" loading="lazy"></picture>PayAviator</a>
-    <div class="links"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="mailto:littlemann76@gmail.com">Support</a></div>
+    <div class="links"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="mailto:support@payaviator.app">Support</a></div>
     <p class="foot-meta" style="margin:0;width:100%">© 2026 PayAviator · <span class="foot-domain">payaviator.app</span> · Plan. Track. Take Control.</p>
   </div>
 </footer>
-<script src="assets/main.js?v=202610111538" defer></script>
+<script src="assets/main.js?v=202610111600" defer></script>
 </body>
 </html>
