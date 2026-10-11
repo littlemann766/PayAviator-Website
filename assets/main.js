@@ -303,7 +303,7 @@
     var centerOf = function(i){ var s=slides[i], tr=track.getBoundingClientRect(), r=s.getBoundingClientRect();
       return track.scrollLeft + (r.left-tr.left) - (track.clientWidth-r.width)/2; };
     goTo = function(i){ i=Math.max(0,Math.min(slides.length-1,i)); track.scrollTo({left:centerOf(i), behavior:reduce?'auto':'smooth'}); };
-    var carNav = document.createElement('div'); carNav.className='car-carNav';
+    var carNav = document.createElement('div'); carNav.className='car-nav';
     var cap = function(s){ var c=$('figcaption',s); return c?c.textContent:''; };
     carNav.innerHTML = '<button type="button" class="car-arrow" data-go="-1" aria-label="Previous screenshot"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M14.5 6 8.5 12l6 6\"/></svg></button><div class="car-dots" role="group" aria-label="Choose a screenshot">'+
       slides.map(function(s,i){ return '<button type="button" class="car-dot" data-dot="'+i+'" aria-label="Screenshot '+(i+1)+' of '+slides.length+': '+cap(s)+'"><span></span></button>'; }).join('')+
