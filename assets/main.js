@@ -11,19 +11,42 @@
   var onScroll = function(){ if(header) header.classList.toggle('scrolled', window.scrollY>8); };
   window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
-  /* Mobile nav */
-  var menuBtn = $('.menu-btn'), nav = $('#navlinks');
-  if(menuBtn && nav){
+  /* Mobile nav: dropdown panel under the header (<=860px). Own scope so later code can't clobber its variables. */
+  (function(){
+    var btn = $('.menu-btn'), panel = $('#navlinks'), hdr = $('.site-header');
+    if(!btn || !panel) return;
+    var mq = window.matchMedia('(max-width:860px)');
+    var scrim = document.createElement('div'); scrim.className = 'nav-scrim'; scrim.setAttribute('aria-hidden','true');
+    document.body.appendChild(scrim);
+    var isOpen = function(){ return btn.getAttribute('aria-expanded') === 'true'; };
     var setMenu = function(open){
-      menuBtn.setAttribute('aria-expanded', String(open));
-      menuBtn.setAttribute('aria-label', open?'Close menu':'Open menu');
-      nav.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      panel.classList.toggle('open', open);
+      scrim.classList.toggle('open', open);
+      document.documentElement.classList.toggle('menu-open', open);
     };
-    menuBtn.addEventListener('click', function(){ setMenu(menuBtn.getAttribute('aria-expanded')!=='true'); });
-    $$('a', nav).forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
-    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && nav.classList.contains('open')){ setMenu(false); menuBtn.focus(); } });
-    document.addEventListener('click', function(e){ if(nav.classList.contains('open') && !nav.contains(e.target) && !menuBtn.contains(e.target)) setMenu(false); });
-  }
+    var hdrBottom = function(){ return hdr && getComputedStyle(hdr).position === 'sticky' ? hdr.getBoundingClientRect().bottom : 0; };
+    btn.addEventListener('click', function(e){ e.stopPropagation(); setMenu(!isOpen()); });
+    $$('a', panel).forEach(function(a){
+      a.addEventListener('click', function(e){
+        var wasOpen = isOpen(); setMenu(false);
+        var h = a.getAttribute('href') || '';
+        if(!wasOpen || h.charAt(0) !== '#' || h.length < 2) return;
+        var t = document.getElementById(h.slice(1)); if(!t) return;
+        // Scroll ourselves once the scroll lock is off, landing just below the sticky header.
+        e.preventDefault();
+        var y = t.getBoundingClientRect().top + window.pageYOffset - hdrBottom() - 8;
+        window.scrollTo({top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth'});
+        if(history.pushState) history.pushState(null, '', h);
+      });
+    });
+    scrim.addEventListener('click', function(){ setMenu(false); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && isOpen()){ setMenu(false); btn.focus(); } });
+    document.addEventListener('click', function(e){ if(isOpen() && !panel.contains(e.target) && !btn.contains(e.target)) setMenu(false); });
+    var onMq = function(){ if(!mq.matches && isOpen()) setMenu(false); };
+    if(mq.addEventListener) mq.addEventListener('change', onMq); else if(mq.addListener) mq.addListener(onMq);
+  })();
 
   /* Scroll reveal */
   var reveals = $$('.reveal');
@@ -280,13 +303,13 @@
     var centerOf = function(i){ var s=slides[i], tr=track.getBoundingClientRect(), r=s.getBoundingClientRect();
       return track.scrollLeft + (r.left-tr.left) - (track.clientWidth-r.width)/2; };
     goTo = function(i){ i=Math.max(0,Math.min(slides.length-1,i)); track.scrollTo({left:centerOf(i), behavior:reduce?'auto':'smooth'}); };
-    var nav = document.createElement('div'); nav.className='car-nav';
+    var carNav = document.createElement('div'); carNav.className='car-carNav';
     var cap = function(s){ var c=$('figcaption',s); return c?c.textContent:''; };
-    nav.innerHTML = '<button type="button" class="car-arrow" data-go="-1" aria-label="Previous screenshot"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M14.5 6 8.5 12l6 6\"/></svg></button><div class="car-dots" role="group" aria-label="Choose a screenshot">'+
+    carNav.innerHTML = '<button type="button" class="car-arrow" data-go="-1" aria-label="Previous screenshot"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M14.5 6 8.5 12l6 6\"/></svg></button><div class="car-dots" role="group" aria-label="Choose a screenshot">'+
       slides.map(function(s,i){ return '<button type="button" class="car-dot" data-dot="'+i+'" aria-label="Screenshot '+(i+1)+' of '+slides.length+': '+cap(s)+'"><span></span></button>'; }).join('')+
       '</div><button type="button" class="car-arrow" data-go="1" aria-label="Next screenshot"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M9.5 6l6 6-6 6\"/></svg></button>';
-    track.insertAdjacentElement('afterend', nav);
-    var dots = $$('.car-dot', nav), prevB=$('[data-go="-1"]',nav), nextB=$('[data-go="1"]',nav);
+    track.insertAdjacentElement('afterend', carNav);
+    var dots = $$('.car-dot', carNav), prevB=$('[data-go="-1"]',carNav), nextB=$('[data-go="1"]',carNav);
     var setActive = function(i){ carIdx=i; dots.forEach(function(d,k){ if(k===i) d.setAttribute('aria-current','true'); else d.removeAttribute('aria-current'); });
       prevB.disabled = i===0; nextB.disabled = i===slides.length-1; };
     var nearest = function(){ var tr=track.getBoundingClientRect(), mid=tr.left+tr.width/2, best=0, bd=1e9;
