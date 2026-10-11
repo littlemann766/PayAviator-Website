@@ -129,6 +129,9 @@
       $('#pctOut').textContent=pc.value+'%'; $('#payOut').textContent=money(+py.value); $('#dolOut').textContent=money(+dl.value);
       $('#mAvail').textContent=money(A); $('#mSav').textContent=money(S); $('#mSavMode').textContent=incSav?'Included':'Protected'; $('#mCush').textContent=money(cush,cush%1?2:0);
       $('#stsBig').textContent=money(safe,safe%1?2:0);
+      var bv=$('#stsBarVal'); if(bv){ bv.textContent=money(safe,safe%1?2:0);
+        $('#stsBarSub').textContent='Available '+money(A)+(incSav?' + savings '+money(S):'')+' − cushion '+money(cush,cush%1?2:0);
+        $('#stsBarFill').style.width=(A+(incSav?S:0)>0?Math.min(100,safe/(A+(incSav?S:0))*100):0).toFixed(1)+'%'; }
       $('#stsPer').textContent='Available now is '+money(A)+'. You can spend up to '+money(safe,safe%1?2:0)+' without going below this cushion.';
       if(calcG){ var sc=appScale(safe,A); calcG.scale(sc); calcG.set(safe/sc.max, ms);
         $('#calcGauge').setAttribute('aria-label','PayAviator Gauge: Safe to Spend '+money(safe)); }
@@ -236,6 +239,12 @@
     $('#ppSnow').setAttribute('aria-pressed',String(kind==='snowball'));
     $('#ppAva').setAttribute('aria-pressed',String(kind==='avalanche'));
     var w=$('#ppExtraWrap'); if(w) w.hidden=(kind==='avalanche');
+    if($('#ppBar')){
+      $('#ppBarName').textContent=d.name.replace(/^Example /,'')+' · '+name;
+      $('#ppBarPct').textContent=cur+'% used';
+      $('#ppBarFill').style.width=Math.min(100,cur)+'%';
+      $('#ppBarRes').textContent=pl?(p.finished?'Paid off '+ppDate(p.months)+' · '+p.months+' mo · '+cents(p.interest)+' interest':'Payment does not reduce the balance'):'Full payoff '+cents(pay)+' · '+cur+'% → '+aft+'% used';
+    }
   }
   if(ppSvg){
     renderCards(); renderPlanner();
@@ -263,8 +272,61 @@
       track.scrollBy({left:+b.dataset.car*w, behavior:reduce?'auto':'smooth'});
     });
   });
+  /* Phones (<=760px): centered slides, dots + small arrows below, tap a screenshot to view it full screen */
+  var phoneMq = window.matchMedia ? window.matchMedia('(max-width:760px)') : {matches:false, addListener:function(){}};
+  var carIdx = 0, goTo = null;
+  if(track){
+    var slides = $$('.slide', track);
+    var centerOf = function(i){ var s=slides[i], tr=track.getBoundingClientRect(), r=s.getBoundingClientRect();
+      return track.scrollLeft + (r.left-tr.left) - (track.clientWidth-r.width)/2; };
+    goTo = function(i){ i=Math.max(0,Math.min(slides.length-1,i)); track.scrollTo({left:centerOf(i), behavior:reduce?'auto':'smooth'}); };
+    var nav = document.createElement('div'); nav.className='car-nav';
+    var cap = function(s){ var c=$('figcaption',s); return c?c.textContent:''; };
+    nav.innerHTML = '<button type="button" class="car-arrow" data-go="-1" aria-label="Previous screenshot">←</button><div class="car-dots" role="group" aria-label="Choose a screenshot">'+
+      slides.map(function(s,i){ return '<button type="button" class="car-dot" data-dot="'+i+'" aria-label="Screenshot '+(i+1)+' of '+slides.length+': '+cap(s)+'"><span></span></button>'; }).join('')+
+      '</div><button type="button" class="car-arrow" data-go="1" aria-label="Next screenshot">→</button>';
+    track.insertAdjacentElement('afterend', nav);
+    var dots = $$('.car-dot', nav), prevB=$('[data-go="-1"]',nav), nextB=$('[data-go="1"]',nav);
+    var setActive = function(i){ carIdx=i; dots.forEach(function(d,k){ if(k===i) d.setAttribute('aria-current','true'); else d.removeAttribute('aria-current'); });
+      prevB.disabled = i===0; nextB.disabled = i===slides.length-1; };
+    var nearest = function(){ var tr=track.getBoundingClientRect(), mid=tr.left+tr.width/2, best=0, bd=1e9;
+      slides.forEach(function(s,i){ var r=s.getBoundingClientRect(), d=Math.abs(r.left+r.width/2-mid); if(d<bd){bd=d;best=i;} }); return best; };
+    var sr; track.addEventListener('scroll', function(){ cancelAnimationFrame(sr); sr=requestAnimationFrame(function(){ setActive(nearest()); }); }, {passive:true});
+    dots.forEach(function(d){ d.addEventListener('click', function(){ goTo(+d.dataset.dot); }); });
+    [prevB,nextB].forEach(function(b){ b.addEventListener('click', function(){ goTo(carIdx + (+b.dataset.go)); }); });
+    setActive(0);
+
+    // Lightbox (phones only)
+    var lb = document.createElement('dialog'); lb.className='lightbox'; lb.setAttribute('aria-label','Screenshot');
+    lb.innerHTML = '<button type="button" class="lb-close" aria-label="Close full-screen screenshot">✕</button><img alt=""><p class="lb-cap"></p>';
+    document.body.appendChild(lb);
+    var lbImg=$('img',lb), lbCap=$('.lb-cap',lb), lastFrame=null;
+    var closeLb = function(){ if(lb.open) lb.close(); };
+    lb.addEventListener('close', function(){ document.documentElement.classList.remove('lb-open'); if(lastFrame) lastFrame.focus({preventScroll:true}); });
+    $('.lb-close',lb).addEventListener('click', closeLb);
+    lb.addEventListener('click', function(e){ if(e.target===lb || e.target===lbImg) closeLb(); });
+    var openLb = function(frame){
+      if(!phoneMq.matches || typeof lb.showModal!=='function') return;
+      var img=$('img',frame), s=frame.closest('.slide');
+      lbImg.src = img.currentSrc || img.src; lbImg.alt = img.alt; lbCap.textContent = cap(s);
+      lastFrame = frame; document.documentElement.classList.add('lb-open'); lb.showModal(); $('.lb-close',lb).focus();
+    };
+    var frames = $$('.frame', track);
+    var syncFrames = function(){ frames.forEach(function(f){ var s=f.closest('.slide');
+      if(phoneMq.matches){ f.setAttribute('role','button'); f.setAttribute('tabindex','0'); f.setAttribute('aria-label','View full screen: '+cap(s)); }
+      else { f.removeAttribute('role'); f.removeAttribute('tabindex'); f.removeAttribute('aria-label'); closeLb(); } }); };
+    frames.forEach(function(f){
+      f.addEventListener('click', function(){ openLb(f); });
+      f.addEventListener('keydown', function(e){ if(phoneMq.matches && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); openLb(f); } });
+    });
+    syncFrames();
+    if(phoneMq.addEventListener) phoneMq.addEventListener('change', syncFrames); else phoneMq.addListener(syncFrames);
+  }
   if(track) track.addEventListener('keydown', function(e){
-    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); $('[data-car="'+(e.key==='ArrowRight'?1:-1)+'"]').click(); }
+    if(e.target!==track) return;
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault();
+      if(phoneMq.matches && goTo) goTo(carIdx+(e.key==='ArrowRight'?1:-1));
+      else $('[data-car="'+(e.key==='ArrowRight'?1:-1)+'"]').click(); }
   });
 
   /* FAQ accordion */

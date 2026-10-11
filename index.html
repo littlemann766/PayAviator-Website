@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="PayAviator: Take control of your money. App screens showing spending and safe-to-spend.">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/styles.css?v=202610111245">
+<link rel="stylesheet" href="assets/styles.css?v=202610111307">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -179,6 +179,7 @@
     </div>
     <div class="tool-grid reveal">
       <form id="stsForm" class="app-card" onsubmit="return false" aria-label="Safe to Spend demo">
+        <div class="live-bar" id="stsBar" aria-hidden="true"><div class="lb-top"><span class="lb-k">Safe to Spend</span><b class="lb-v" id="stsBarVal">$0</b></div><div class="lb-meter"><i id="stsBarFill"></i></div><div class="lb-s" id="stsBarSub"></div></div>
         <div class="field">
           <label for="avail">Available now <output for="avail" id="availOut"></output></label>
           <p class="hint-s">Connected checking &amp; cash accounts (bank-reported available balance)</p>
@@ -228,7 +229,8 @@
       <p class="lead">PayAviator's Payoff Planner looks at one card at a time. <strong>Snowball</strong> pays each card's minimum, and any extra you add goes to the smallest balance first. <strong>Avalanche</strong> shows paying the full balance off. The gauge shows how much of the selected card's credit limit is used.</p>
     </div>
     <div class="tool-grid reveal">
-      <div class="app-card">
+      <div class="app-card pp-controls">
+        <div class="live-bar pp-bar" id="ppBar" aria-hidden="true"><div class="lb-top"><b class="lb-n" id="ppBarName"></b><span class="lb-pct" id="ppBarPct"></span></div><div class="lb-meter"><i id="ppBarFill"></i></div><div class="lb-s" id="ppBarRes"></div></div>
         <h3 class="mini-h" id="ppCardsH">Choose a card <span class="ex-label">Example data</span></h3>
         <div class="pp-cards" id="ppCards" role="group" aria-labelledby="ppCardsH"></div>
         <h3 class="mini-h" id="ppStratH">Payment choice for this card</h3>
@@ -238,7 +240,7 @@
         </div>
         <div class="pp-extra" id="ppExtraWrap">
           <label for="ppExtra">Extra monthly payment</label>
-          <div class="pp-money"><span aria-hidden="true">$</span><input type="number" id="ppExtra" min="0" max="5000" step="10" value="0" inputmode="decimal" aria-describedby="ppExtraHelp"></div>
+          <div class="pp-money"><span aria-hidden="true">$</span><input type="number" id="ppExtra" min="0" max="5000" step="10" value="" placeholder="0" inputmode="decimal" aria-describedby="ppExtraHelp"></div>
           <p class="pp-help" id="ppExtraHelp">Optional money paid above your minimums each month. It goes to the smallest balance first. When that balance is paid off, its payment rolls over to the next one.</p>
         </div>
         <p class="disclaimer">Example cards only, for illustration. Projections assume the APR stays the same, interest is added monthly, every card pays its minimum, and there are no new charges. Simplified demo: nothing is saved or sent anywhere. Not financial advice.</p>
@@ -368,6 +370,6 @@
     <p style="margin:0;width:100%">© 2026 PayAviator. Plan. Track. Take Control.</p>
   </div>
 </footer>
-<script src="assets/main.js?v=202610111245" defer></script>
+<script src="assets/main.js?v=202610111307" defer></script>
 </body>
 </html>
