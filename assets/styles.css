@@ -618,7 +618,7 @@ dialog.lightbox{display:none}
 
   /* Carousel: one centered slide, sized to the viewport height, dots + arrows below */
   .car-btns{display:none}
-  .track{--slw:min(78vw,calc(64svh * 9 / 19.5));--side:calc((100vw - var(--slw)) / 2);width:100vw;margin-left:calc(50% - 50vw);gap:var(--side);padding:6px var(--side) 14px;scroll-padding:0 var(--side);
+  .track{--slw:min(78vw,calc(64svh * 9 / 19.5),calc((100svh - 255px) * 9 / 19.5));--side:calc((100vw - var(--slw)) / 2);width:100vw;margin-left:calc(50% - 50vw);gap:var(--side);padding:6px var(--side) 14px;scroll-padding:0 var(--side);
     scrollbar-width:none;overscroll-behavior-x:contain}
   .track::-webkit-scrollbar{display:none}
   .slide{flex:0 0 var(--slw);scroll-snap-align:center;scroll-snap-stop:always}
@@ -646,3 +646,27 @@ dialog.lightbox{display:none}
   .track{--slw:min(40vw,calc(78svh * 9 / 19.5))}
 }
 @media (max-width:760px) and (prefers-reduced-motion:reduce){ .lb-meter i,.car-dot span{transition:none} }
+
+/* ---------- Carousel controls: compact chevrons (all sizes) ---------- */
+.car-btns{gap:8px;margin-bottom:10px}
+.car-btns button,.car-arrow{position:relative;display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;
+  border:1px solid rgba(0,245,255,.38);background:rgba(8,25,54,.35);color:var(--cyan);cursor:pointer;
+  transition:background .2s,border-color .2s,opacity .2s;-webkit-tap-highlight-color:transparent}
+.car-btns button::before,.car-arrow::before{content:"";position:absolute;inset:-4px;border-radius:50%} /* 48px hit area */
+.car-btns svg,.car-arrow svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.car-btns button:hover,.car-arrow:hover{background:rgba(0,245,255,.12);border-color:var(--cyan);box-shadow:none}
+.car-btns button:active,.car-arrow:active{background:rgba(0,245,255,.2)}
+#screens{scroll-margin-top:var(--hdr,75px)}
+@media (max-width:760px){
+  .car-nav{gap:10px;margin-top:2px}
+  .car-arrow{width:36px;height:36px;background:transparent;border-color:rgba(0,245,255,.3)}
+  .car-arrow svg{width:18px;height:18px}
+  .car-arrow::before{inset:-4px}
+  .car-arrow:disabled{opacity:.28}
+  .car-dot{width:22px}
+  .car-dot span{width:7px;height:7px;background:rgba(255,255,255,.32)}
+  .car-dot[aria-current="true"] span{width:20px;background:var(--cyan)}
+  /* neighbours sit fully off-screen (frame ring + shadow included) */
+  .track{gap:calc(var(--side) + 40px);padding-top:10px;scroll-margin-top:calc(var(--hdr,75px) + 8px)}
+}
+@media (hover:none){.car-btns button:hover,.car-arrow:hover{background:transparent;border-color:rgba(0,245,255,.3)}}

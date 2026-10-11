@@ -282,9 +282,9 @@
     goTo = function(i){ i=Math.max(0,Math.min(slides.length-1,i)); track.scrollTo({left:centerOf(i), behavior:reduce?'auto':'smooth'}); };
     var nav = document.createElement('div'); nav.className='car-nav';
     var cap = function(s){ var c=$('figcaption',s); return c?c.textContent:''; };
-    nav.innerHTML = '<button type="button" class="car-arrow" data-go="-1" aria-label="Previous screenshot">←</button><div class="car-dots" role="group" aria-label="Choose a screenshot">'+
+    nav.innerHTML = '<button type="button" class="car-arrow" data-go="-1" aria-label="Previous screenshot"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M14.5 6 8.5 12l6 6\"/></svg></button><div class="car-dots" role="group" aria-label="Choose a screenshot">'+
       slides.map(function(s,i){ return '<button type="button" class="car-dot" data-dot="'+i+'" aria-label="Screenshot '+(i+1)+' of '+slides.length+': '+cap(s)+'"><span></span></button>'; }).join('')+
-      '</div><button type="button" class="car-arrow" data-go="1" aria-label="Next screenshot">→</button>';
+      '</div><button type="button" class="car-arrow" data-go="1" aria-label="Next screenshot"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M9.5 6l6 6-6 6\"/></svg></button>';
     track.insertAdjacentElement('afterend', nav);
     var dots = $$('.car-dot', nav), prevB=$('[data-go="-1"]',nav), nextB=$('[data-go="1"]',nav);
     var setActive = function(i){ carIdx=i; dots.forEach(function(d,k){ if(k===i) d.setAttribute('aria-current','true'); else d.removeAttribute('aria-current'); });
@@ -292,8 +292,17 @@
     var nearest = function(){ var tr=track.getBoundingClientRect(), mid=tr.left+tr.width/2, best=0, bd=1e9;
       slides.forEach(function(s,i){ var r=s.getBoundingClientRect(), d=Math.abs(r.left+r.width/2-mid); if(d<bd){bd=d;best=i;} }); return best; };
     var sr; track.addEventListener('scroll', function(){ cancelAnimationFrame(sr); sr=requestAnimationFrame(function(){ setActive(nearest()); }); }, {passive:true});
-    dots.forEach(function(d){ d.addEventListener('click', function(){ goTo(+d.dataset.dot); }); });
-    [prevB,nextB].forEach(function(b){ b.addEventListener('click', function(){ goTo(carIdx + (+b.dataset.go)); }); });
+    // If the slide's top is tucked under the sticky header, nudge the page so the whole slide shows (phones only).
+    var reveal = function(){
+      if(!phoneMq.matches) return;
+      var hdr=document.querySelector('.site-header'), hb=hdr && getComputedStyle(hdr).position==='sticky' ? hdr.getBoundingClientRect().bottom : 0;
+      var top=track.getBoundingClientRect().top, need=(hb+8)-top;
+      if(need>0 && need<window.innerHeight*0.6) window.scrollBy({top:-need, behavior:reduce?'auto':'smooth'});
+    };
+    dots.forEach(function(d){ d.addEventListener('click', function(){ goTo(+d.dataset.dot); reveal(); }); });
+    [prevB,nextB].forEach(function(b){ b.addEventListener('click', function(){ goTo(carIdx + (+b.dataset.go)); reveal(); }); });
+    var se; var onSwipeEnd=function(){ clearTimeout(se); se=setTimeout(reveal, 'onscrollend' in window ? 0 : 160); };
+    track.addEventListener('onscrollend' in window ? 'scrollend' : 'scroll', onSwipeEnd, {passive:true});
     setActive(0);
 
     // Lightbox (phones only)
