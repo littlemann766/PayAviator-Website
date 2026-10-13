@@ -31,6 +31,7 @@
 <script>
 (function(){
   var KEY='AIzaSyAcMkfgXQps-FaRC-hbQzwFOiPRI1wlEPk', API='https://identitytoolkit.googleapis.com/v1/accounts:';
+  try{var _k=new URLSearchParams(location.search).get('apiKey');if(_k&&/^AIza[0-9A-Za-z_-]{30,}$/.test(_k))KEY=_k;}catch(e){}
   var q=new URLSearchParams(location.search), mode=q.get('mode'), code=q.get('oobCode');
   var card=document.getElementById('card');
   var SUP='<a href="mailto:support@payaviator.app">support@payaviator.app</a>';
