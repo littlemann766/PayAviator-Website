@@ -15,7 +15,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=202610132200">
+<link rel="stylesheet" href="assets/site.css?v=202610132330">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -48,13 +48,13 @@
         <span class="pp"><strong data-amt="yearly">$29.99</strong><span class="per">/ year</span></span>
         <span class="pb">One payment for the year</span><span class="tick" aria-hidden="true"></span></span></label>
     </fieldset>
-    <p class="note">Use the <b>same email</b> in the app to unlock it.</p>
-    <p class="soon" id="soonNote" role="status" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><b>Coming soon.</b> Your first bank account is on us in the app today.</span></p>
+    <p class="note">Use the same account you use in the PayAviator app. Plus unlocks there as soon as you subscribe.</p>
     <label class="agree"><input type="checkbox" id="agree" aria-describedby="renewNotice"><span>I agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a> and understand my plan renews automatically until I cancel.</span></label>
-    <button type="submit" class="btn primary subbtn" id="subBtn" disabled>Coming soon</button>
+    <button type="submit" class="btn primary subbtn" id="subBtn">Subscribe · $3.99/month</button>
     <p class="renew" id="renewNotice" aria-live="polite"></p>
-    <p class="hint" id="subHint" aria-live="polite"></p>
-    <p class="fine">Renews automatically until you cancel. Cancel anytime from your account, or in Google Play under Payments &amp; subscriptions if you subscribed in the app; access lasts to the end of the paid period. Refunds follow the <a href="terms.html#subscriptions">Terms</a>. Receipts go to your email. Questions: <a href="mailto:support@payaviator.app">support@payaviator.app</a>.</p>
+    <p class="hint" id="subHint" role="alert"></p>
+    <p class="whoami" id="whoami" aria-live="polite"></p>
+    <p class="fine">Your first bank account is free. Plus lets you link more. Payment is handled securely by Stripe. Cancel anytime from <a href="/account/">your account</a>; Plus stays on until the end of the period you paid for, and there are no refunds for partial periods (see the <a href="terms.html#subscriptions">Terms</a>). If you subscribed in the app, manage it in Google Play under Payments &amp; subscriptions. Receipts go to your email. Questions: <a href="mailto:support@payaviator.app">support@payaviator.app</a>.</p>
   </form>
  </div>
 </div></section>
@@ -62,11 +62,11 @@
 <footer>
   <div class="wrap foot">
     <a class="brand" href="index.html"><picture><source srcset="assets/logo-64.webp" type="image/webp"><img src="assets/logo-64.png" alt="" width="38" height="38" loading="lazy"></picture>PayAviator</a>
-    <nav class="links" aria-label="Footer"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="delete-account.html">Delete Account</a><a href="support.html">Support</a></nav>
+    <nav class="links" aria-label="Footer"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="/account/">Account</a><a href="delete-account.html">Delete Account</a><a href="support.html">Support</a></nav>
     <p class="foot-meta">© 2026 PayAviator · payaviator.app · Plan. Track. Take Control.</p>
   </div>
 </footer>
-<script src="assets/site.js?v=202610132200" defer></script>
-<script src="assets/subscribe.js?v=202610132200" defer></script>
+<script src="assets/site.js?v=202610132330" defer></script>
+<script type="module" src="assets/billing.js?v=202610132330"></script>
 </body>
 </html>
