@@ -691,3 +691,62 @@ dialog.lightbox{display:none}
 
 /* Footer: show the site address as plain text */
 .foot-domain{color:#c9d4e3;font-weight:800;letter-spacing:.01em;white-space:nowrap}
+
+/* ---------- Legal accordions (2026-10-13) ---------- */
+.legal details.acc{background:var(--navy);border:2px solid rgba(0,245,255,.45);border-radius:18px;margin-bottom:10px;scroll-margin-top:calc(var(--hdr,72px) + 12px)}
+.legal details.acc.hl{border-color:var(--cyan);box-shadow:0 0 22px rgba(0,245,255,.22)}
+.legal details.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;min-height:48px}
+.legal details.acc>summary::-webkit-details-marker{display:none}
+.legal details.acc>summary h2{margin:0;font-size:17px;line-height:1.3}
+.legal details.acc>summary::after{content:"+";flex:none;width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,245,255,.5);color:var(--cyan);display:grid;place-items:center;font:900 18px/1 var(--font-ui)}
+.legal details.acc[open]>summary::after{content:"\2212"}
+.legal details.acc>summary:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:16px}
+.legal .acc-body{padding:0 18px 16px}
+.legal .acc-body>:first-child{margin-top:0}
+.legal .tldr{padding:18px 20px;margin-bottom:12px}
+.legal .tldr h2{font-size:18px;margin:0 0 6px}
+.legal .tldr ul{margin:0 0 8px;padding-left:20px}
+.legal .tldr li{color:#fff;line-height:1.5;margin:3px 0}
+.legal .tldr .acc-tip{font-size:14px;color:#c9d4e3;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.acc-all{font:800 13px var(--font-ui);color:var(--cyan);background:transparent;border:1px solid rgba(0,245,255,.5);border-radius:999px;padding:6px 12px;cursor:pointer}
+@media (max-width:860px){
+  .legal-page .toc{display:none}
+  .legal-page .legal-hero{padding:20px 0 12px}
+  .legal-page .legal-hero h1{font-size:clamp(26px,7vw,34px);margin:6px 0}
+}
+
+/* ---------- Shorter home page on phones (2026-10-13) ---------- */
+.demo-tabs{display:none}
+.more-d>summary{cursor:pointer;color:var(--cyan);font:800 15px var(--font-ui);margin:4px 0 10px;list-style:none}
+.more-d>summary::-webkit-details-marker{display:none}
+.more-d>summary::after{content:" ›"}
+.more-d[open]>summary::after{content:" ‹"}
+.pp-head-s{margin-top:80px}
+@media (max-width:860px){
+  .demo-tabs{display:flex;max-width:420px;margin:0 0 16px}
+  .demo-tabs button{flex:1}
+  .demo-pane.off{display:none}
+  .pp-head-s{margin-top:0}
+}
+@media (max-width:640px){
+  .section{padding:34px 0}
+  #tools.section,#banking.section{padding-top:6px!important}
+  .section-head,.section-head.center{margin-bottom:16px}
+  .section h2{font-size:clamp(25px,7vw,30px);margin:8px 0 8px}
+  .section-head .lead{font-size:15px;line-height:1.5;margin:0}
+  .hero{padding:18px 22px 30px;gap:20px}
+  .hero .tagline{display:none}
+  /* Features: horizontal swipe row */
+  #features .grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -22px;padding:4px 22px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #features .grid::-webkit-scrollbar{display:none}
+  #features .feature{flex:0 0 78%;scroll-snap-align:center;padding:18px}
+  .swipe-hint{display:block;font:800 12px var(--font-ui);color:var(--muted-2,#9fb3cc);text-align:center;margin-top:2px}
+  /* Connection steps: 2-column grid */
+  .flow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .flow div{padding:9px 10px;font-size:13px;gap:8px}
+  .flow div span{width:24px;height:24px}
+  .flow div:last-child{grid-column:1/-1}
+  .bank-grid{gap:16px}
+  .cta{padding:28px 18px}
+}
+.swipe-hint{display:none}

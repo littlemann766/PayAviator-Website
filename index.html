@@ -26,7 +26,7 @@
 <meta name="twitter:image:alt" content="PayAviator: Take control of your money. App screens showing spending and safe-to-spend.">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/styles.css?v=202610131000">
+<link rel="stylesheet" href="assets/styles.css?v=202610131300">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -57,7 +57,7 @@
 <div class="hero-band">
 <section class="wrap hero" aria-labelledby="hero-title">
   <div class="reveal">
-    <span class="chip-pill"><span class="dot" aria-hidden="true"></span>Personal finance, cleared for takeoff</span>
+    <span class="chip-pill"><span class="dot" aria-hidden="true"></span>Personal finance, made clear</span>
     <h1 id="hero-title">Take control of your <span class="accent">money.</span></h1>
     <p class="sub">PayAviator brings bills, budgets, spending, income and connected financial accounts together so your important numbers are easier to understand.</p>
     <div class="actions">
@@ -170,6 +170,7 @@
         <button class="linkbtn" aria-expanded="false" aria-controls="f6"><span class="h-open">More details ›</span><span class="h-close">Show less ‹</span></button>
       </article>
     </div>
+    <p class="swipe-hint" aria-hidden="true">Swipe for more ›</p>
   </div>
 </section>
 
@@ -181,6 +182,11 @@
       <h2>How Safe to Spend works</h2>
       <p class="lead">In PayAviator, Safe to Spend starts from <strong>Available now</strong>, the available balance of the checking and cash accounts you connect. It then keeps back a <strong>Payday Cushion</strong> you choose. Savings stay protected unless you include them. Move the sliders to see how it works.</p>
     </div>
+    <div class="demo-tabs seg sm" role="tablist" aria-label="Choose a demo">
+      <button type="button" role="tab" data-pane="sts" aria-selected="true">Safe to Spend</button>
+      <button type="button" role="tab" data-pane="pp" aria-selected="false">Payoff Planner</button>
+    </div>
+    <div class="demo-pane" data-pane="sts">
     <div class="tool-grid reveal">
       <form id="stsForm" class="app-card" onsubmit="return false" aria-label="Safe to Spend demo">
         <div class="live-bar" id="stsBar" aria-hidden="true"><div class="lb-top"><span class="lb-k">Safe to Spend</span><b class="lb-v" id="stsBarVal">$0</b></div><div class="lb-meter"><i id="stsBarFill"></i></div><div class="lb-s" id="stsBarSub"></div></div>
@@ -227,7 +233,9 @@
       </div>
     </div>
 
-    <div class="section-head reveal" style="margin-top:80px" id="payoff">
+    </div>
+    <div class="demo-pane" data-pane="pp">
+    <div class="section-head reveal pp-head-s" id="payoff">
       <span class="eyebrow">Payoff planner demo</span>
       <h2>Pick a card, then Snowball or Avalanche</h2>
       <p class="lead">PayAviator's Payoff Planner looks at one card at a time. <strong>Snowball</strong> pays each card's minimum, and any extra you add goes to the smallest balance first. <strong>Avalanche</strong> shows paying the full balance off. The gauge shows how much of the selected card's credit limit is used.</p>
@@ -264,6 +272,7 @@
         </section>
       </div>
     </div>
+    </div>
   </div>
 </section>
 </div>
@@ -274,7 +283,7 @@
     <div class="section-head reveal">
       <span class="eyebrow">Inside the app</span>
       <h2 id="screens-title">A look at PayAviator</h2>
-      <p class="lead">Screens from PayAviator 3.9.6. All amounts shown are sample data, not real accounts.</p>
+      <p class="lead">Screens from PayAviator 4.1.1. All amounts shown are sample data, not real accounts.</p>
     </div>
     <div class="carousel reveal">
       <div class="car-btns"><button type="button" data-car="-1" aria-label="Previous screenshot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg></button><button type="button" data-car="1" aria-label="Next screenshot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button></div>
@@ -305,8 +314,9 @@
           <span class="eyebrow">Connected accounts</span>
           <h2>Connected financial accounts</h2>
           <p>PayAviator uses Plaid to let users connect supported financial institutions. When a user chooses to connect an account, PayAviator may access account and balance information and transaction information made available through Plaid so the app can display financial activity and support budgeting and money-management features.</p>
+          <details class="more-d"><summary>More about connecting an account</summary>
           <p>PayAviator does not ask users to provide their online-banking password directly to PayAviator. Account connections are initiated through Plaid. Users control whether they connect an account and can disconnect connected accounts.</p>
-          <p>Connecting an account requires a PayAviator account (sign in with Google or email). Bills you add stay on your phone. Connected bank data (synced transactions and connection details) is stored on PayAviator's servers so it can sync. Plaid access tokens are encrypted there and never sent to your phone, and deleting your PayAviator account removes your bank connections at Plaid and deletes that stored data.</p>
+          <p>Connecting an account requires a PayAviator account (sign in with Google or email). Bills you add stay on your phone. Connected bank data (synced transactions and connection details) is stored on PayAviator's servers so it can sync. Plaid access tokens are encrypted there and never sent to your phone, and deleting your PayAviator account removes your bank connections at Plaid and deletes that stored data.</p></details>
           <p>For more information, read the <a href="privacy.html">PayAviator Privacy Policy</a>.</p>
         </div>
         <div class="flow" aria-label="How connecting an account works">
@@ -377,6 +387,6 @@
     <p class="foot-meta" style="margin:0;width:100%">© 2026 PayAviator · <span class="foot-domain">payaviator.app</span> · Plan. Track. Take Control.</p>
   </div>
 </footer>
-<script src="assets/main.js?v=202610131000" defer></script>
+<script src="assets/main.js?v=202610131300" defer></script>
 </body>
 </html>
