@@ -274,3 +274,10 @@ details.fold summary{color:var(--navy)}details.fold summary h2{color:var(--navy)
 .ptc-cta .ptc-q a{color:#fff;font-weight:800}
 @media (max-width:640px){.ptc-cta .store{font-size:14px;min-height:56px}.ptc-cta .store .soon{font-size:11px}}
 @media (max-width:520px){.ptc-cta{padding:28px 18px}.ptc-actions{flex-direction:column;align-items:center}.ptc-cta .store{width:100%;max-width:300px;justify-content:flex-start}}
+/* ptc-cta light variant (boss: match site, not navy) */
+.ptc-cta{background:radial-gradient(circle at 70% 20%,rgba(22,228,234,.35),transparent 60%),linear-gradient(160deg,rgba(255,255,255,.92),rgba(211,234,250,.92));border-color:rgba(22,228,234,.75);box-shadow:0 10px 30px rgba(13,42,85,.10);color:var(--navy)}
+.ptc-cta h2{color:var(--navy)}
+.ptc-cta p{color:var(--muted)}
+.ptc-cta .store{background:#fff;color:var(--navy);border-color:var(--cyan);box-shadow:0 0 18px rgba(22,228,234,.35)}
+.ptc-cta .store .soon{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+.ptc-cta .ptc-q a{color:var(--blue-d)}
