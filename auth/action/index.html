@@ -5,29 +5,44 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#071a38">
+<meta name="theme-color" content="#e4f2fc">
 <title>Account action | PayAviator</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
-<link rel="stylesheet" href="/assets/styles.css?v=202610131500">
+<link rel="stylesheet" href="/assets/site.css?v=202610131800">
 <style>
 .act{max-width:520px;margin:28px auto 60px}
 .act .box{padding:24px 22px}
 .act h1{font-size:26px;margin:0 0 10px}
-.act p{color:#d7e2ef;line-height:1.6}
-.act label{display:block;font:800 14px var(--font-ui);margin:14px 0 6px;color:#fff}
-.act input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:2px solid rgba(0,245,255,.45);background:#071a38;color:#fff;font-size:16px}
-.act .err{color:#ffb4b4;font-weight:700}
+.act p{color:#3e5677;line-height:1.6}
+.act label{display:block;font:800 14px var(--font-ui);margin:14px 0 6px;color:#0d2a55}
+.act input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:2px solid rgba(11,127,212,.45);background:#fff;color:#0d2a55;font-size:16px}
+.act .err{color:#b4233b;font-weight:700}
 .act .btn{margin-top:16px}
-.spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(0,245,255,.25);border-top-color:var(--cyan);animation:sp 1s linear infinite;margin-bottom:10px}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(0,245,255,.25);border-top-color:#0b7fd4;animation:sp 1s linear infinite;margin-bottom:10px}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
+<script>document.documentElement.classList.add('js')</script>
 </head>
 <body class="legal-page">
-<header class="site-header"><div class="wrap nav"><a class="brand" href="/"><img src="/assets/logo-64.png" alt="" width="42" height="42">PayAviator</a></div></header>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="/index.html" aria-label="PayAviator home"><picture><source srcset="/assets/logo-64.webp" type="image/webp"><img src="/assets/logo-64.png" alt="" width="38" height="38"></picture>PayAviator</a>
+    <button class="menu-btn" aria-expanded="false" aria-controls="navlinks" aria-label="Open menu"><span></span></button>
+    <nav id="navlinks" class="navlinks" aria-label="Main"><a href="/features.html">Features</a><a href="/how-it-works.html">How it works</a><a href="/pricing.html">Pricing</a><a href="/faq.html">FAQ</a><a href="/support.html">Support</a><a class="btn primary small" href="/index.html#get">Get the app</a></nav>
+  </div>
+</header>
 <main id="main" class="wrap"><div class="act legal"><section class="box" id="card" aria-live="polite">
 <div class="spin" aria-hidden="true"></div><h1>Working on it…</h1><p>Please wait a moment.</p>
 </section></div></main>
-<footer><div class="wrap foot"><p class="foot-meta" style="margin:0;width:100%">© 2026 PayAviator · payaviator.app</p></div></footer>
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="/index.html"><picture><source srcset="/assets/logo-64.webp" type="image/webp"><img src="/assets/logo-64.png" alt="" width="38" height="38" loading="lazy"></picture>PayAviator</a>
+    <nav class="links" aria-label="Footer"><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/delete-account.html">Delete Account</a><a href="/support.html">Support</a></nav>
+    <p class="foot-meta">© 2026 PayAviator · payaviator.app · Plan. Track. Take Control.</p>
+  </div>
+</footer>
+<script src="/assets/site.js?v=202610131800" defer></script>
 <script>
 (function(){
   var KEY='AIzaSyAcMkfgXQps-FaRC-hbQzwFOiPRI1wlEPk', API='https://identitytoolkit.googleapis.com/v1/accounts:';

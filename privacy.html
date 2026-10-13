@@ -5,35 +5,25 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#071a38">
+<meta name="theme-color" content="#e4f2fc">
 <title>Privacy Policy | PayAviator</title>
 <link rel="canonical" href="https://payaviator.app/privacy.html">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/styles.css?v=202610131500">
+<link rel="stylesheet" href="assets/site.css?v=202610131800">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body class="legal-page">
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="wrap nav">
-    <a class="brand" href="index.html" aria-label="PayAviator home">
-      <picture><source srcset="assets/logo-64.webp" type="image/webp"><img src="assets/logo-64.png" alt="" width="42" height="42"></picture>
-      PayAviator
-    </a>
+    <a class="brand" href="index.html" aria-label="PayAviator home"><picture><source srcset="assets/logo-64.webp" type="image/webp"><img src="assets/logo-64.png" alt="" width="38" height="38"></picture>PayAviator</a>
     <button class="menu-btn" aria-expanded="false" aria-controls="navlinks" aria-label="Open menu"><span></span></button>
-    <nav id="navlinks" class="navlinks" aria-label="Main">
-      <a href="index.html#features">Features</a>
-      <a href="index.html#banking">Connected Accounts</a>
-      <a href="subscribe.html">Subscribe</a>
-      <a href="privacy.html" aria-current="page">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a class="btn small" href="index.html#get">Get PayAviator</a>
-    </nav>
+    <nav id="navlinks" class="navlinks" aria-label="Main"><a href="features.html">Features</a><a href="how-it-works.html">How it works</a><a href="pricing.html">Pricing</a><a href="faq.html">FAQ</a><a href="support.html">Support</a><a class="btn primary small" href="index.html#get">Get the app</a></nav>
   </div>
 </header>
 <main id="main" class="wrap">
-  <div class="legal-hero reveal">
+  <div class="legal-hero">
     <p><a href="index.html">← PayAviator Home</a></p>
     <span class="eyebrow">Legal</span>
     <h1>PayAviator Privacy Policy</h1>
@@ -43,7 +33,7 @@
     <nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#information-you-provide">Information you provide</a><a href="#account-and-sign-in">Account and sign-in</a><a href="#connected-financial-accounts">Connected financial accounts</a><a href="#what-is-stored-where">What's stored where</a><a href="#preventing-free-account-abuse">Preventing free-connection misuse</a><a href="#notifications">Notifications</a><a href="#subscriptions-and-payments">Subscriptions and payments</a><a href="#how-information-is-used">How information is used</a><a href="#sharing">Sharing</a><a href="#service-providers">Service providers</a><a href="#user-choices">User choices</a><a href="#deleting-your-account">Deleting your account</a><a href="#security">Security</a><a href="#children">Age requirement</a><a href="#changes">Changes</a><a href="#contact">Contact</a></nav>
     <article class="legal">
       <section class="box tldr"><h2>In short</h2><ul><li>Your bills and budgets stay on your phone.</li><li>Bank data comes through Plaid; we never see your bank password.</li><li>Our servers identify you by a user ID; your email is used for sign-in and receipts.</li><li>We don't sell or share your personal information.</li><li>Your first bank account is on us; a Plus subscription links more.</li><li>PayAviator is for adults 18 and older.</li><li>You can <a href="delete-account.html">delete your account</a> any time.</li></ul><p class="acc-tip">Tap a heading below to read the full text. <button type="button" class="acc-all">Expand all</button></p></section>
-      <section class="box reveal"><p>PayAviator is a personal finance application designed to help users organize bills, budgets, spending, income, debts, and connected financial-account information.</p></section>
+      <section class="box"><p>PayAviator is a personal finance application designed to help users organize bills, budgets, spending, income, debts, and connected financial-account information.</p></section>
       <details id="information-you-provide" class="acc"><summary><h2>Information you provide</h2></summary><div class="acc-body"><p>PayAviator may process information you enter into the app, such as bills, income, spending, budgets, debt information, savings settings, notes, reminders, and other information used to provide app features.</p></div></details>
       <details id="account-and-sign-in" class="acc"><summary><h2>Account and sign-in</h2></summary><div class="acc-body"><p>You can use PayAviator's bill, income, spending, and budgeting features without a PayAviator account. An account is needed only to connect a financial institution and sync connected-account data.</p><p>PayAviator accounts use Firebase Authentication, a Google service. You can sign in with your Google account or with an email address and password. Firebase Authentication stores a unique user ID for your account, your email address, and basic sign-in records such as when the account was created and when you last signed in. If you sign in with Google, Firebase also receives your Google account display name and a link to your profile photo. If you use an email address and password, your password is handled by Firebase Authentication; PayAviator's servers never receive or store it.</p><p>PayAviator's servers identify you by your Firebase user ID only. They do not store your email address, name, or photo.</p></div></details>
       <details id="connected-financial-accounts" class="acc hl"><summary><h2>Connected financial accounts</h2></summary><div class="acc-body"><p>If you choose to connect a financial institution, PayAviator uses Plaid to facilitate that connection. Depending on the features you authorize and the data made available by your institution, PayAviator may receive account information, balances, and transaction information. This information is used to provide user-requested personal-finance features such as displaying account activity, supporting budgeting, and helping calculate financial summaries.</p><p>PayAviator does not require you to give your online-banking password directly to PayAviator. Authentication with supported institutions is handled through the Plaid connection experience.</p><p>Connecting a financial institution requires a PayAviator account. When you connect, Plaid provides PayAviator's servers with an access token for that connection. Access tokens are encrypted on PayAviator's servers (AES-256) and are never sent to your phone.</p><p>Plaid also notifies PayAviator's servers when a connection has new or updated transactions, when new accounts are available, or when a connection needs attention, for example when you need to sign in to your bank again, a connection is about to expire, or access was revoked. PayAviator uses these notifications to sync transactions and to show a Reconnect option in the app when a connection needs to be updated.</p><p>Before Plaid opens, PayAviator shows a short notice explaining what connecting means, with links to this policy and Plaid's privacy policy. When you tap Continue, the app records on your phone that you agreed, including the time, the policy version, whether you were connecting or reconnecting, and the app version. If you choose Not now, no connection is started.</p><p>Banks connected with app versions released before sign-in was added need to be connected again after you sign in. After the sign-in update is released, PayAviator will remove those earlier bank connections at Plaid and delete their stored data.</p></div></details>
@@ -66,11 +56,11 @@
 </main>
 <footer>
   <div class="wrap foot">
-    <a class="brand" href="index.html"><picture><source srcset="assets/logo-64.webp" type="image/webp"><img src="assets/logo-64.png" alt="" width="42" height="42" loading="lazy"></picture>PayAviator</a>
-    <div class="links"><a href="subscribe.html">Subscribe</a><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="delete-account.html">Delete Account</a><a href="mailto:support@payaviator.app">Support</a></div>
-    <p class="foot-meta" style="margin:0;width:100%">© 2026 PayAviator · <span class="foot-domain">payaviator.app</span> · Plan. Track. Take Control.</p>
+    <a class="brand" href="index.html"><picture><source srcset="assets/logo-64.webp" type="image/webp"><img src="assets/logo-64.png" alt="" width="38" height="38" loading="lazy"></picture>PayAviator</a>
+    <nav class="links" aria-label="Footer"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="delete-account.html">Delete Account</a><a href="support.html">Support</a></nav>
+    <p class="foot-meta">© 2026 PayAviator · payaviator.app · Plan. Track. Take Control.</p>
   </div>
 </footer>
-<script src="assets/main.js?v=202610131500" defer></script>
+<script src="assets/site.js?v=202610131800" defer></script>
 </body>
 </html>
