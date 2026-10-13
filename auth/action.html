@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#071a38">
+<title>Account action | PayAviator</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="stylesheet" href="/assets/styles.css?v=202610131300">
+<style>
+.act{max-width:520px;margin:28px auto 60px}
+.act .box{padding:24px 22px}
+.act h1{font-size:26px;margin:0 0 10px}
+.act p{color:#d7e2ef;line-height:1.6}
+.act label{display:block;font:800 14px var(--font-ui);margin:14px 0 6px;color:#fff}
+.act input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:2px solid rgba(0,245,255,.45);background:#071a38;color:#fff;font-size:16px}
+.act .err{color:#ffb4b4;font-weight:700}
+.act .btn{margin-top:16px}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(0,245,255,.25);border-top-color:var(--cyan);animation:sp 1s linear infinite;margin-bottom:10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body class="legal-page">
+<header class="site-header"><div class="wrap nav"><a class="brand" href="/"><img src="/assets/logo-64.png" alt="" width="42" height="42">PayAviator</a></div></header>
+<main id="main" class="wrap"><div class="act legal"><section class="box" id="card" aria-live="polite">
+<div class="spin" aria-hidden="true"></div><h1>Working on it…</h1><p>Please wait a moment.</p>
+</section></div></main>
+<footer><div class="wrap foot"><p class="foot-meta" style="margin:0;width:100%">© 2026 PayAviator · payaviator.app</p></div></footer>
+<script>
+(function(){
+  var KEY='AIzaSyAcMkfgXQps-FaRC-hbQzwFOiPRI1wlEPk', API='https://identitytoolkit.googleapis.com/v1/accounts:';
+  var q=new URLSearchParams(location.search), mode=q.get('mode'), code=q.get('oobCode');
+  var card=document.getElementById('card');
+  var SUP='<a href="mailto:support@payaviator.app">support@payaviator.app</a>';
+  var esc=function(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML};
+  var show=function(h,body){card.innerHTML='<h1>'+h+'</h1>'+body};
+  var fail=function(msg){
+    var m=String(msg||''), t='This link doesn\u2019t work', b;
+    if(/EXPIRED/.test(m)){t='This link has expired';b='Links only work for a short time. Open the PayAviator app and ask for a new email.'}
+    else if(/INVALID_OOB_CODE|USED/.test(m)){b='This link is not valid or has already been used. If you already did this step, you\u2019re all set. Otherwise, ask for a new email in the PayAviator app.'}
+    else if(/USER_DISABLED/.test(m)){b='This account has been turned off.'}
+    else if(/USER_NOT_FOUND|EMAIL_NOT_FOUND/.test(m)){b='We couldn\u2019t find this account.'}
+    else if(/WEAK_PASSWORD/.test(m)){b='That password is too weak. Use at least 6 characters.'}
+    else if(m==='NET'){t='Something went wrong';b='We couldn\u2019t reach the server. Check your connection and try the link again.'}
+    else b='This link is missing information or is not valid. Ask for a new email in the PayAviator app.';
+    show(t,'<p>'+b+'</p><p>Need help? Email '+SUP+'.</p>');
+  };
+  var call=function(ep,body){
+    return fetch(API+ep+'?key='+KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .catch(function(){throw 'NET'})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw (j.error&&j.error.message)||'ERR';return j})});
+  };
+  var cont=function(){var c=q.get('continueUrl');try{var u=new URL(c);if(u.protocol==='https:')return '<p><a class="btn small" href="'+esc(u.href)+'">Continue</a></p>'}catch(e){}return ''};
+  if(!code||!mode){fail('MISSING');return}
+  if(mode==='verifyEmail'||mode==='verifyAndChangeEmail'){
+    call('update',{oobCode:code}).then(function(){show(mode==='verifyEmail'?'Email verified':'Email changed','<p>'+(mode==='verifyEmail'?'Email verified. You can go back to the PayAviator app and sign in.':'Your email has been verified and changed. You can go back to the PayAviator app and sign in with it.')+'</p>'+cont())}).catch(fail);
+  } else if(mode==='recoverEmail'){
+    call('update',{oobCode:code}).then(function(j){show('Email restored','<p>Your sign-in email was changed back'+(j.email?' to <b>'+esc(j.email)+'</b>':'')+'. If you didn\u2019t ask for the change, reset your password in the PayAviator app and email '+SUP+'.</p>')}).catch(fail);
+  } else if(mode==='resetPassword'){
+    call('resetPassword',{oobCode:code}).then(function(j){
+      show('Choose a new password','<p>For '+esc(j.email||'your account')+'</p><form id="pf" novalidate><label for="p1">New password</label><input id="p1" type="password" autocomplete="new-password" minlength="6" required><label for="p2">Confirm new password</label><input id="p2" type="password" autocomplete="new-password" required><p class="err" id="pe" role="alert"></p><button class="btn solid" type="submit">Save password</button></form>');
+      document.getElementById('pf').addEventListener('submit',function(e){
+        e.preventDefault();var a=document.getElementById('p1').value,b=document.getElementById('p2').value,pe=document.getElementById('pe');
+        if(a.length<6){pe.textContent='Use at least 6 characters.';return}
+        if(a!==b){pe.textContent='The passwords don\u2019t match.';return}
+        show('Saving…','<div class="spin"></div>');
+        call('resetPassword',{oobCode:code,newPassword:a}).then(function(){show('Password changed','<p>Your password has been changed. You can go back to the PayAviator app and sign in.</p>')}).catch(fail);
+      });
+    }).catch(fail);
+  } else fail('MODE');
+})();
+</script>
+</body>
+</html>
