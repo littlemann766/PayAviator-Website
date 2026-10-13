@@ -34,7 +34,7 @@ const PRICES = { monthly: '$3.99', yearly: '$29.99' };
     const m = num(PRICES.monthly), y = num(PRICES.yearly), tag = $('[data-save]');
     const pct = m > 0 && y > 0 && y < m * 12 ? Math.round((1 - y / (m * 12)) * 100) : 0;
     tag.textContent = pct > 0 ? `Save ${pct}%` : 'All year';
-    renew.textContent = `${price} today. Renews automatically at ${price}/${PER[plan]} until you cancel.`;
+    renew.textContent = stripeConfigured ? `${price} today. Renews automatically at ${price}/${PER[plan]} until you cancel.` : `When available: ${price}/${PER[plan]}, renews until you cancel.`;
     btn.textContent = stripeConfigured ? `Subscribe · ${price}/${PER[plan]}` : 'Coming soon';
   }
   function sync() {

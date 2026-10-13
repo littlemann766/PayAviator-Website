@@ -30,3 +30,5 @@
   if(b)b.addEventListener('click',function(){var all=Array.prototype.every.call(accs,function(d){return d.open;});Array.prototype.forEach.call(accs,function(d){d.open=!all;});b.textContent=all?'Expand all':'Collapse all';});
 })();
 (function(){var f=function(){var el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(el&&el.tagName==='DETAILS')el.open=true;};window.addEventListener('hashchange',f);f();})();
+(function(){var t=document.querySelector('.car-band .swipe'),d=document.querySelectorAll('.car-dots i');if(!t||!d.length)return;var f=t.querySelectorAll('figure');
+t.addEventListener('scroll',function(){var x=t.scrollLeft+t.clientWidth/2,b=0,bd=1e9;Array.prototype.forEach.call(f,function(e,i){var c=e.offsetLeft+e.offsetWidth/2,dd=Math.abs(c-x);if(dd<bd){bd=dd;b=i;}});Array.prototype.forEach.call(d,function(e,i){e.style.background=i===b?'var(--cyan)':'';});},{passive:true});})();

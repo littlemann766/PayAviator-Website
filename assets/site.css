@@ -237,3 +237,27 @@ details.acc summary h2{font-size:18px;margin:0}
 @media (max-width:420px){.pp strong{font-size:24px}.pp .per{font-size:14px}}
 .plan-box{min-width:0}.plans{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 @media (max-width:380px){.pp{white-space:normal}.pp .per{display:block;margin:0}.plan-box{padding:12px}}
+/* v2 (Beth review) */
+html{background:var(--bg2)}
+body{background:linear-gradient(180deg,var(--bg) 0,var(--bg2) 900px,var(--bg2) 100%)}
+footer{margin-top:0}main{padding-bottom:40px}
+.plan-box{background:var(--card);border:1px solid var(--line);outline:2px solid transparent;outline-offset:-1px;position:relative}
+.plan input:checked+.plan-box{border-color:var(--line);outline-color:var(--cyan);box-shadow:var(--shadow)}
+.tick{position:absolute;top:-9px;right:-9px;width:24px;height:24px;border-radius:50%;background:var(--cyan);display:none;place-items:center}
+.tick::after{content:"";width:9px;height:5px;border:solid var(--ink);border-width:0 0 2.5px 2.5px;transform:translateY(-1px) rotate(-45deg)}
+.plan input:checked+.plan-box .tick{display:grid}
+.subbtn:disabled{background:#d3eafa;color:rgba(13,42,85,.7);box-shadow:none;cursor:not-allowed;transform:none}
+.thin-band{padding:12px 18px;border-radius:16px;margin-bottom:14px;text-align:center;font-weight:800;color:#fff}
+.stuck{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+.dl-band{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.dl-band h2{margin:0;font-size:clamp(21px,3.4vw,28px)}
+.dl-band .btn.secondary{border-color:var(--cyan);color:#fff}
+.car-band{padding-bottom:18px}.car-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.car-head h2{margin:0;font-size:22px}
+.swipe-hint{font-weight:800;color:var(--amber);font-size:14px}
+.car-band .swipe figcaption{color:#d4e2f3}
+.car-dots{display:flex;justify-content:center;gap:7px}.car-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3)}.car-dots i:first-child{background:var(--cyan)}
+.flow.dark b{background:rgba(22,228,234,.2);color:var(--cyan)}.flow.dark li{color:#e6f0fb}
+details.fold summary{color:var(--navy)}details.fold summary h2{color:var(--navy)}
+.legal-layout{grid-template-columns:1fr;max-width:860px}
+.band-dark .chip{background:rgba(22,228,234,.2)}
