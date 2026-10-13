@@ -281,3 +281,7 @@ details.fold summary{color:var(--navy)}details.fold summary h2{color:var(--navy)
 .ptc-cta .store{background:#fff;color:var(--navy);border-color:var(--cyan);box-shadow:0 0 18px rgba(22,228,234,.35)}
 .ptc-cta .store .soon{background:var(--amber);color:var(--ink);border-color:var(--amber)}
 .ptc-cta .ptc-q a{color:var(--blue-d)}
+/* ptc-cta navy buttons on light blue (boss: white -> navy) */
+.ptc-cta{background:radial-gradient(circle at 70% 20%,rgba(22,228,234,.30),transparent 60%),linear-gradient(160deg,#e4f2fc,#cfe7f8)}
+.ptc-cta .store{background:var(--navy);color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(22,228,234,.45)}
+.ptc-cta .store svg{fill:#fff;color:#fff}
