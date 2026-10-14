@@ -32,3 +32,24 @@
 (function(){var f=function(){var el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(el&&el.tagName==='DETAILS')el.open=true;};window.addEventListener('hashchange',f);f();})();
 (function(){var t=document.querySelector('.car-band .swipe'),d=document.querySelectorAll('.car-dots i');if(!t||!d.length)return;var f=t.querySelectorAll('figure');
 t.addEventListener('scroll',function(){var x=t.scrollLeft+t.clientWidth/2,b=0,bd=1e9;Array.prototype.forEach.call(f,function(e,i){var c=e.offsetLeft+e.offsetWidth/2,dd=Math.abs(c-x);if(dd<bd){bd=dd;b=i;}});Array.prototype.forEach.call(d,function(e,i){e.style.background=i===b?'var(--cyan)':'';});},{passive:true});})();
+/* Interactive sections: animated open/close, aria-expanded, whole-card tap */
+(function(){
+  var ds=document.querySelectorAll('details.acc,details.sec,details.more-d');if(!ds.length)return;
+  var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  Array.prototype.forEach.call(ds,function(d){
+    var s=d.querySelector(':scope>summary'),b=d.querySelector(':scope>.d-body,:scope>.acc-body');if(!s)return;
+    var sync=function(){s.setAttribute('aria-expanded',d.open?'true':'false');};sync();
+    d.addEventListener('toggle',sync);
+    s.addEventListener('click',function(e){
+      if(!b||rm||!b.animate)return;e.preventDefault();
+      if(d._a)d._a.cancel();
+      if(!d.open){d.open=true;sync();var h=b.scrollHeight;d._a=b.animate([{height:'0px',opacity:0},{height:h+'px',opacity:1}],{duration:260,easing:'ease-out'});d._a.onfinish=function(){d._a=null;};}
+      else{var h2=b.scrollHeight;s.setAttribute('aria-expanded','false');d._a=b.animate([{height:h2+'px',opacity:1},{height:'0px',opacity:0}],{duration:220,easing:'ease-in'});d._a.onfinish=function(){d.open=false;d._a=null;sync();};}
+    });
+  });
+  // Whole feature card taps its "More details"
+  Array.prototype.forEach.call(document.querySelectorAll('.feat-grid .card'),function(c){
+    var s=c.querySelector('details.more-d>summary');if(!s)return;
+    c.addEventListener('click',function(e){if(e.target.closest('summary,a,button,.d-body'))return;s.click();});
+  });
+})();
