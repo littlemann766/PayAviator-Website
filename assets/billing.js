@@ -138,11 +138,11 @@ function initAccount() {
       const isPlus = !!(s.plus || s.isPlus || s.premium || s.active || ent.active || /plus|premium/i.test(typeof ent === 'string' ? ent : (ent.tier || ent.plan || '')) || /active|trialing/i.test(s.status || s.subscriptionStatus || ''));
       plan.textContent = isPlus ? 'PayAviator Plus' : 'Free';
       plan.className = 'badge' + (isPlus ? ' green' : '');
-      const end = s.currentPeriodEnd || s.periodEnd || s.expiresAt || ent.expiresAt || ent.currentPeriodEnd;
+      const end = (s.cancelAtPeriodEnd && s.periodEnd) || s.currentPeriodEnd || s.periodEnd || s.expiresAt || ent.expiresAt || ent.currentPeriodEnd;
       const cancelling = s.cancelAtPeriodEnd || ent.cancelAtPeriodEnd;
       const d = end ? new Date(typeof end === 'number' && end < 1e12 ? end * 1000 : end) : null;
       const ds = d && !isNaN(d) ? d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-      detail.textContent = isPlus ? (cancelling ? `Cancelled. Plus stays on until ${ds || 'the end of the paid period'}.` : (ds ? `Renews on ${ds}.` : 'Active. Open the app to link more banks.')) : 'Your first bank account is free. Plus lets you link more.';
+      detail.textContent = (s.cancelAtPeriodEnd && s.periodEnd && ds) ? `Plus stays on until ${ds}.` : isPlus ? (cancelling ? `Cancelled. Plus stays on until ${ds || 'the end of the paid period'}.` : (ds ? `Renews on ${ds}.` : 'Active. Open the app to link more banks.')) : 'Your first bank account is free. Plus lets you link more.';
       box.dataset.status = JSON.stringify(s);
     } catch (x) { plan.textContent = 'Unknown'; detail.textContent = x.message; }
   });
