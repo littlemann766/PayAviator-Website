@@ -306,3 +306,9 @@ details.fold summary{color:var(--navy)}details.fold summary h2{color:var(--navy)
 .done-ico{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--green);color:#fff;font-size:34px;font-weight:800}
 .done-ico.muted{background:var(--navy2)}
 #subHint:not(.ok){color:#b4233c;font-weight:600}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:14px;background:#fff;color:var(--navy);border:1.5px solid rgba(13,42,85,.22);font-weight:600}
+.gbtn:hover{border-color:var(--navy)}
+.gbtn:disabled{opacity:.6}
+.sheet .or{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:.85rem;color:rgba(13,42,85,.6)}
+.sheet .or::before,.sheet .or::after{content:"";flex:1;height:1px;background:rgba(13,42,85,.15)}
+.sheet .fine{overflow-wrap:anywhere}
