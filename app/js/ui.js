@@ -142,6 +142,17 @@ export function openSheet({ title, sub, fields, values = {}, submitText = 'Save'
   return entry;
 }
 
+/** Read-only detail sheet (rows of [label, value]); same layer/focus-trap as the edit sheets. */
+export function openInfoSheet({ title, sub, rows }) {
+  const tid = 'info-t' + (++fid);
+  const sheet = h('section', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': tid, 'data-info-sheet': '' },
+    h('header', { class: 'sheet-h' }, h('div', null, h('h2', { id: tid, text: title }), sub ? h('p', { text: sub }) : null), h('button', { class: 'x', type: 'button', 'aria-label': 'Close', onclick: () => entry.close() }, icon('x'))),
+    h('div', { class: 'sheet-b' }, h('dl', { class: 'info-dl' }, rows.filter((r) => r[1] !== '' && r[1] != null).map(([k, v]) => h('div', { class: 'info-row' }, h('dt', { text: k }), h('dd', { text: String(v) }))))),
+    h('footer', { class: 'sheet-f' }, h('span', { class: 'sp' }), h('button', { class: 'btn ghost', type: 'button', text: 'Close', onclick: () => entry.close() })));
+  const entry = openLayer('sheet', sheet, { initialFocus: () => sheet.querySelector('.btn') });
+  return entry;
+}
+
 /* ---------------------------------------------------------------- shell + boot */
 const SYNC_TXT = { idle: 'Starting\u2026', ok: 'Synced', busy: 'Syncing\u2026', off: 'Offline', error: 'Sync problem' };
 function syncPill() {
