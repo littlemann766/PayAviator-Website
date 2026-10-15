@@ -427,3 +427,22 @@ details.more-d[open]>summary{margin-bottom:8px}
 .c-flow li::after{content:"";position:absolute;left:calc(1.05em - 1px);top:2.1em;bottom:0;width:2px;background:rgba(11,127,212,.25)}
 .c-flow li:last-child::after{display:none}
 @media (max-width:480px){.connect{padding:22px 18px}.c-three{flex-direction:column}}
+
+/* Professional thin-line icon system (icons-pro): 1.5px stroke, round caps, navy/cyan, pale-cyan tile */
+.ic{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.chip,.chip.c2,.chip.c3,.chip.c4{border-radius:12px;background:rgba(22,228,234,.14);border:1px solid rgba(11,127,212,.18);color:var(--navy)}
+.chip svg{stroke-width:1.5}
+.chip.c2 svg,.chip.c4 svg{color:#0a7f86}
+.band-dark .chip{background:rgba(22,228,234,.14);color:#fff}
+.chev svg{stroke-width:1.8}
+.mini .dot,.mini.m2 .dot{width:30px;height:30px;border-radius:9px;background:rgba(22,228,234,.14);border:1px solid rgba(11,127,212,.18);color:#0a7f86}
+.mini .dot svg{width:18px;height:18px}
+.ptc-cta .store svg.ic{fill:none;stroke:currentColor}
+/* how-it-works: three-item row + stepper */
+.c-three li{padding-left:34px;min-height:24px;display:flex;align-items:center}
+.c-three li::before{content:none}
+.c-three .ck{position:absolute;left:0;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:rgba(22,228,234,.14);border:1px solid rgba(11,127,212,.18);color:#0a7f86}
+.c-three .ck svg{width:16px;height:16px}
+.c-flow li::before{background:#fff;border:1.5px solid var(--cyan);color:var(--navy);font-weight:700}
+.c-flow li:last-child::before{background:#fff;border-color:var(--green);color:var(--green-d)}
+.c-flow li::after{width:1.5px;background:rgba(11,127,212,.22)}
