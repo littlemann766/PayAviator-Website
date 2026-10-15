@@ -2,7 +2,7 @@
 
 Static HTML + one shared CSS (`app.css`) + vanilla ES modules. No framework, no build step, no CDN except the Firebase Auth SDK from `www.gstatic.com` (same version/approach as `assets/billing.js`). **Local branch `webapp-build`; not deployed.**
 
-Routes (files): `/app/signin`, `/app/` (`index.html`, dashboard), `/app/bills`, `/app/income`, `/app/budget`, `/app/accounts`, `/app/settings`. Links are relative (`bills.html`), so it works from any static host (GitHub Pages serves extensionless URLs too).
+Routes (files): `/app/signin`, `/app/` (`index.html`, dashboard), `/app/calendar`, `/app/bills`, `/app/income`, `/app/budget`, `/app/accounts`, `/app/settings`. Links are relative (`bills.html`), so it works from any static host (GitHub Pages serves extensionless URLs too).
 
 ```
 app/
@@ -12,6 +12,7 @@ app/
   js/auth.js        Firebase Auth (Google + email), verified-email handling, DEMO_MOCK
   js/calc.js        Safe to Spend, bill/income occurrences, gauge scale (port of the app logic)
   js/gauge.js       gauge SVG (same look as the app)
+  js/forms.js       shared add/edit bill and income sheets (Bills, Income and Calendar all use them)
   js/ui.js          shell, toast, side panel/sheet, confirm dialog, focus trap, form builder, auth guard, idle sign-out
   js/views.js       shared view helpers;  js/pages/*.js  one module per page
   tests/            webapp_test.py (demo e2e), live_contract_test.py (+ live_backend_server.mjs)
@@ -61,3 +62,12 @@ Phase 1 scope only: no Calendar/Spending/Paycheck Planner/Payoff pages, goals ar
 4. Is a `/api/sync/changes` cursor (`seq`) stable per user across `DELETE /api/sync/all` (we reset to 0 locally after delete)?
 5. Tombstones purge after 90 days: should a web session idle longer than that do a full resync (`since=0`)? Currently memory is rebuilt at each load, so this is fine.
 6. Any server limit on `/api/plaid/transactions` rate from the web (we call it once per Accounts visit)?
+
+## Calendar (`/app/calendar`)
+Month grid modelled on the Android app's Calendar tab (`index.html` `renderCalendar` / `dayCell` / `calendarDay`). It adds no new data or record shapes: it reads the same `bill` and `income` records through `api.bills.list()` / `api.income.list()` and uses `billOnDate` / `incomeOnDate` from `calc.js` (the app's `isRecurringOnDate` / `paycheckOnDate`).
+- **Day cells:** each bill is drawn in its own color (navy or white text, whichever is readable); income uses the app's paycheck green `#15803d`; paid bills are dimmed with a check mark; a partly paid bill gives the day a red border; today has a cyan ring. Desktop and tablet widths (600px and up) show name + amount pills (3 per day, then "+n more"); phones show colored dots so cells stay readable.
+- **Tap a day** to select it. The panel under the grid lists that day's bills and income; tap one to edit it (same side panel / sheet as the Bills and Income pages, including paid, repeat and delete). **Add bill** (top right, same button as the other pages) and the panel's **Add bill / Add income** buttons pre-fill the selected date.
+- **Month navigation** uses the shared view month (also used by Bills, Income and Budget), plus a **Today** button. The tab is in the sidebar and in the phone tab bar (7 tabs).
+- Edits go through the same sync path (`api.bills.save/remove`, `api.income.save/remove`), so they appear on the phone and offline queueing is unchanged.
+- **Not ported from the app:** reminders and work hours (not synced kinds), long-press shortcut, week tabs, multi-month range, calendar filter toggles, and moving a single occurrence to another day.
+- Tests: `[calendar]` section in `tests/webapp_test.py`. Screenshots: `python3 app/tests/shots_calendar.py [outdir]`.

@@ -4,7 +4,7 @@ import { auth } from './auth.js';
 import { api } from './api.js';
 
 export const IDLE_MS = 30 * 60 * 1000; // idle sign-out for shared devices
-const NAV = [['home', 'Home', 'index.html'], ['bills', 'Bills', 'bills.html'], ['coins', 'Income', 'income.html'], ['pie', 'Budget', 'budget.html'], ['gear', 'Settings', 'settings.html']];
+const NAV = [['home', 'Home', 'index.html'], ['cal', 'Calendar', 'calendar.html'], ['bills', 'Bills', 'bills.html'], ['coins', 'Income', 'income.html'], ['pie', 'Budget', 'budget.html'], ['gear', 'Settings', 'settings.html']];
 
 /* ---------------------------------------------------------------- toast */
 let toastEl, toastT;

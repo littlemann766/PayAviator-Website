@@ -11,7 +11,7 @@ class TS(socketserver.ThreadingTCPServer): allow_reuse_address = True; daemon_th
 srv = TS(('127.0.0.1', 0), functools.partial(Q, directory=ROOT)); PORT = srv.server_address[1]
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 B = f'http://localhost:{PORT}/app/'
-PAGES = ['signin', 'index', 'bills', 'income', 'budget', 'accounts', 'settings']
+PAGES = ['signin', 'index', 'calendar', 'bills', 'income', 'budget', 'accounts', 'settings']
 fails, passes = [], 0
 def check(name, cond, extra=''):
     global passes
@@ -249,6 +249,34 @@ def run():
             t = open(os.path.join(ROOT, u)).read()
             check(f'site /{u} is a static landing page linking to /app/settings.html#plan (no refresh/JS)', 'href="/app/settings.html#plan"' in t and 'http-equiv' not in t and '<script' not in t)
         pg.goto(B + 'signin.html?demo=1'); pg.wait_for_url('**/index.html')
+        print('[calendar]')
+        pg.goto(B + 'index.html'); pg.wait_for_selector('[data-safe]')
+        pg.goto(B + 'calendar.html'); pg.wait_for_selector('.cday')
+        check('calendar: tab in nav, grid has whole weeks', pg.locator('.tabs a[href="calendar.html"][aria-current=page]').count() == 1 and pg.locator('.cday').count() % 7 == 0)
+        check('calendar: today highlighted and selected by default', pg.locator(f'.cday.today[data-iso="{today}"].sel').count() == 1)
+        check('calendar: demo bills show with their own colors', pg.evaluate("[...document.querySelectorAll('.cday .pill')].some(p=>p.style.background)") and pg.locator('.cday .pill, .cday .cd').count() > 0)
+        nb = pg.locator('.dpanel [data-bill]').count()
+        m0 = pg.locator('[data-month]').get_attribute('data-month')
+        pg.click('[aria-label="Next month"]'); pg.wait_for_selector('.cday')
+        check('calendar: month navigation', pg.locator('[data-month]').get_attribute('data-month') != m0)
+        pg.click('[data-today]'); pg.wait_for_selector(f'.cday.today[data-iso="{today}"]')
+        check('calendar: Today button returns to current month', pg.locator('[data-month]').get_attribute('data-month') == m0)
+        day = today[:8] + '28'
+        pg.click(f'.cday[data-iso="{day}"]'); pg.wait_for_selector(f'.cday.sel[data-iso="{day}"]')
+        check('calendar: tapping a day selects it and shows its panel', pg.inner_text('#day-t').find(' 28,') > 0)
+        pg.click('[data-add=bill-day]'); pg.wait_for_selector('.sheet')
+        check('calendar: Add bill on a day pre-fills that due date', pg.evaluate("[...document.querySelectorAll('.sheet input')].some(i=>i.value===%r)" % day))
+        pg.fill('.sheet [data-name=name] input', 'Test calendar bill'); pg.fill('.sheet [data-name=amount] input', '42.50')
+        pg.locator('.sheet').get_by_role('button', name='Add bill').click(); pg.wait_for_selector('.sheet', state='detached')
+        pg.wait_for_selector(f'.cday[data-iso="{day}"] .pill:has-text("Test calendar bill")')
+        check('calendar: new bill appears on that day and in the panel', pg.locator('.dpanel .bill:has-text("Test calendar bill")').count() == 1)
+        pg.click('.dpanel .bill:has-text("Test calendar bill")'); pg.wait_for_selector('.sheet')
+        check('calendar: tapping a bill in the panel opens the edit sheet', pg.locator('.sheet h2:has-text("Edit bill")').count() == 1)
+        pg.locator('.sheet').get_by_role('button', name='Delete').click(); pg.locator('.dlg').get_by_role('button', name='Delete bill').click()
+        pg.wait_for_timeout(300)
+        check('calendar: deleting removes it from the calendar', pg.locator('.cday .pill:has-text("Test calendar bill")').count() == 0)
+        pg.goto(B + 'bills.html'); pg.wait_for_selector('.bill')
+        check('calendar: bills page unaffected after shared-form refactor', pg.locator('.bill:has-text("Test calendar bill")').count() == 0)
 
         print('[security]')
         html = [open(os.path.join(ROOT, 'app', f'{n}.html')).read() for n in PAGES]
