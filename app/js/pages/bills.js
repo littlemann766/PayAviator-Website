@@ -76,7 +76,7 @@ function render(main) {
   cat.addEventListener('change', () => { filter.cat = cat.value; rerender(); });
   const addBtn = h('button', { class: 'btn primary', type: 'button', 'data-add': 'bill', onclick: () => openBill(null) }, icon('plus'), h('span', { text: 'Add bill' }));
   const list = [];
-  if (!all.length) list.push(emptyState({ icn: 'bills', title: 'No bills yet', text: 'Add your first bill to see due dates and what is left to pay. Bills you add on your phone show up here too.', action: h('button', { class: 'btn primary', type: 'button', onclick: () => openBill(null) }, icon('plus'), h('span', { text: 'Add bill' })) }));
+  if (!all.length) list.push(emptyState({ icn: 'bills', title: 'No bills yet', text: 'Add your first bill to see due dates and what is left to pay. Bills you added in the phone app appear here after you update the app to 4.1.5 or later and sign in with the same account.', action: h('button', { class: 'btn primary', type: 'button', onclick: () => openBill(null) }, icon('plus'), h('span', { text: 'Add bill' })) }));
   else if (!shown.length) list.push(emptyState({ icn: 'search', title: occ.length ? 'No bills match' : 'No bills this month', text: occ.length ? 'Try a different search or category.' : 'Nothing is due this month. Use the arrows to look at another month.' }));
   else { let last = ''; const wrap = h('div', { class: 'billwrap' }); for (const o of shown) { if (o.iso !== last) { wrap.append(h('h3', { class: 'day', text: fmtDay(o.iso) })); last = o.iso; } wrap.append(billCard(o, today)); } list.push(wrap); }
   main.replaceChildren(
