@@ -216,7 +216,7 @@ def run():
         check('delete account: signs out, clears local data, shows confirmation', pg.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('pa_demo_server_v1:')).length") == 0)
         for u in ('account.html', 'account/index.html'):
             t = open(os.path.join(ROOT, u)).read()
-            check(f'site /{u} redirects to /app/settings.html#plan', 'url=/app/settings.html#plan' in t and 'location.replace' in t)
+            check(f'site /{u} is a static landing page linking to /app/settings.html#plan (no refresh/JS)', 'href="/app/settings.html#plan"' in t and 'http-equiv' not in t and '<script' not in t)
         pg.goto(B + 'signin.html?demo=1'); pg.wait_for_url('**/index.html')
 
         print('[security]')

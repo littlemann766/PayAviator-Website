@@ -292,3 +292,4 @@ button.menu-i,.menu .mi{display:flex;gap:.7rem;align-items:center;width:100%;pad
 .fatal-ns{padding:2rem;color:#fff;text-align:center}body.signin .fatal-ns{color:#0d2a55}
 .switch input{z-index:1}
 .tabs.shot{position:sticky}
+body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-brand .brand{display:inline-flex;align-items:center;gap:.5rem;color:#0d2a55;text-decoration:none;font-size:1.3rem}body.signin .si-brand h1{font-size:1.15rem;margin:.6rem 0 0;color:#0d2a55}body.signin .si-foot{text-align:center;padding:1rem;font-size:.85rem;color:#0d2a55}body.signin .si-foot a{color:#0d2a55}
