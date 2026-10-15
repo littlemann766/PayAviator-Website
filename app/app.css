@@ -316,3 +316,7 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .pp-spend-merchant-mark{width:28px;height:28px;border:2px solid var(--cyan);border-radius:8px;background:#fff;color:#082344;display:inline-flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:950;box-sizing:border-box}
 .pp-spend-empty{color:var(--muted);text-align:center}
 @media(max-width:520px){.pp-spend-donut-wrap{grid-template-columns:1fr}.pp-spend-donut{max-width:230px}.pp-spend-legend{padding:0 4px}}
+
+.pp-merchant-logo{width:34px;height:34px;flex:0 0 34px;border-radius:9px;background:#143b66;color:#fff;font-weight:900;font-size:.8rem;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box}
+.pp-merchant-logo.has-img,.pp-spend-merchant-mark.has-img{background:#fff}
+.pp-merchant-logo img,.pp-spend-merchant-mark img{width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box;background:#fff;display:block}

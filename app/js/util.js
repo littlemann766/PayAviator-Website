@@ -107,3 +107,22 @@ export function uuid() {
   return Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
 }
 export const slug = (s) => String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+
+/* Merchant marks, same order as the app: Plaid logo_url -> known-merchant favicon -> letter badge. */
+const MERCHANT_DOMAINS = [[/united dairy farmers|\budf\b/i, 'udfinc.com'], [/geico/i, 'geico.com'], [/chipotle/i, 'chipotle.com'], [/runway/i, 'runway.com'], [/gettysburg marketplace/i, 'gettysburgmarketplace.com'], [/capital one/i, 'capitalone.com'], [/starbucks/i, 'starbucks.com'], [/mcdonald/i, 'mcdonalds.com'], [/kroger/i, 'kroger.com'], [/walmart/i, 'walmart.com'], [/target/i, 'target.com'], [/amazon/i, 'amazon.com'], [/speedway/i, 'speedway.com'], [/shell/i, 'shell.com'], [/netflix/i, 'netflix.com'], [/spotify/i, 'spotify.com'], [/pnc/i, 'pnc.com']];
+export const txLogo = (x) => (x && (x.logo_url || x.logoUrl || x.merchant_logo_url || x.merchantLogoUrl || (x.counterparties && x.counterparties.find && (x.counterparties.find((c) => c && c.logo_url) || {}).logo_url) || (x.counterparty && x.counterparty.logo_url))) || '';
+export function merchantSrc(name, logo) {
+  if (logo && /^https:\/\//.test(logo)) return logo;
+  const hit = MERCHANT_DOMAINS.find(([re]) => re.test(String(name || '')));
+  return hit ? 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(hit[1]) + '&sz=64' : '';
+}
+export function merchantMark(name, logo, cls = 'pp-merchant-logo') {
+  const letter = (String(name || '').trim()[0] || '?').toUpperCase(), src = merchantSrc(name, logo);
+  const el = h('span', { class: cls + ' pp-merchant-fallback', 'data-merchant-mark': '', text: letter });
+  if (src) {
+    const img = document.createElement('img'); img.alt = ''; img.referrerPolicy = 'no-referrer';
+    img.onload = () => { el.textContent = ''; el.append(img); el.classList.add('has-img'); };
+    img.src = src;
+  }
+  return el;
+}

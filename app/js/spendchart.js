@@ -1,6 +1,6 @@
 /* Spending breakdown donut: same data logic as the Android app's renderSpendChart (index.html) -
  * periods Week (Sun start) / Month / Year, Categories or Merchants, top 5 + "Other", refunds reduce net only. */
-import { h, money, toISO, num } from './util.js';
+import { h, money, toISO, num, txLogo, merchantMark } from './util.js';
 import { billOccurrences, isFunds } from './calc.js';
 
 export const SLICE_COLORS = ['#20c96b', '#27d7e8', '#f4d72c', '#ff8a24', '#ef4047', '#8b5cf6'];
@@ -61,7 +61,7 @@ export function breakdown(rows, mode) {
   for (const x of rows) {
     const v = signed(x); if (v <= 0) continue;
     const l = label(x, mode), k = String(l).trim().toLowerCase().replace(/\s+/g, ' ');
-    const g = groups.get(k) || { label: l, amount: 0, logo: '' }; g.amount += v; if (!g.logo) g.logo = x.kind === 'bank' ? (x.logo_url || x.merchant_logo_url || '') : ''; groups.set(k, g);
+    const g = groups.get(k) || { label: l, amount: 0, logo: '' }; g.amount += v; if (!g.logo) g.logo = x.kind === 'bank' ? txLogo(x) : ''; groups.set(k, g);
   }
   let parts = [...groups.values()].map((o) => [o.label, o.amount, o.logo]).sort((a, b) => b[1] - a[1]);
   if (parts.length > 6) { const other = parts.slice(5).reduce((n, x) => n + x[1], 0); parts = parts.slice(0, 5); parts.push([mode === 'location' ? 'Other merchants' : 'Other categories', other, '']); }
@@ -89,7 +89,7 @@ export function spendChart({ data, bank, range, mode, onRange, onMode }) {
     const pct = gross ? Math.round((val / gross) * 100) : 0, col = SLICE_COLORS[i % SLICE_COLORS.length], letter = (String(l).trim()[0] || '?').toUpperCase();
     let marker = h('i'); marker.style.background = col;
     if (mode === 'location') {
-      marker = h('span', { class: 'pp-spend-merchant-mark', text: letter }); marker.style.borderColor = col;
+      marker = merchantMark(l, logo, 'pp-spend-merchant-mark'); marker.style.borderColor = col;
     }
     return h('div', { class: 'pp-spend-legend-row' + (mode === 'location' ? ' merchant' : ''), 'data-legend': '' }, marker, h('span', { text: l }), h('b', null, money(val) + ' ', h('small', { text: pct + '%' })));
   });

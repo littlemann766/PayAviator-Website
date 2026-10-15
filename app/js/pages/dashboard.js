@@ -1,4 +1,4 @@
-import { h, icon, money, todayISO, fmtShort, toISO, num } from '../util.js';
+import { h, icon, money, todayISO, fmtShort, toISO, num, txLogo, merchantMark } from '../util.js';
 import { bootPage } from '../ui.js';
 import { api } from '../api.js';
 import { safeToSpend, billOccurrences, incomeOnDate, incomeAmountOn, isFunds } from '../calc.js';
@@ -20,7 +20,7 @@ async function loadTx() {
 /** Merge bank transactions (Plaid: positive = money out) with synced manual spending. Signed: spending < 0, income > 0. */
 export function activityRows(bank, spending, n = 10) {
   const rows = [];
-  for (const t of bank || []) { const a = Number(t.amount); if (!t || !t.date || !Number.isFinite(a)) continue; rows.push({ key: 'b' + (t.transaction_id || rows.length), name: t.merchant_name || t.name || 'Bank transaction', date: String(t.date).slice(0, 10), amt: -a, pending: !!t.pending, src: t.institution_name || 'Bank' }); }
+  for (const t of bank || []) { const a = Number(t.amount); if (!t || !t.date || !Number.isFinite(a)) continue; rows.push({ key: 'b' + (t.transaction_id || rows.length), name: t.merchant_name || t.name || 'Bank transaction', date: String(t.date).slice(0, 10), amt: -a, pending: !!t.pending, src: t.institution_name || 'Bank', logo: txLogo(t) }); }
   for (const x of spending || []) { const a = Math.abs(num(x.amount)); if (!x.date) continue; rows.push({ key: 's' + x.id, name: x.name || 'Spending', date: String(x.date).slice(0, 10), amt: isFunds(x) ? a : -a, pending: false, src: 'Added by you' }); }
   return rows.sort((a, b) => b.date.localeCompare(a.date) || a.key.localeCompare(b.key)).slice(0, n);
 }
@@ -83,7 +83,7 @@ function render(main) {
   const act = activityRows(tx.list, data.spending), todayIso = todayISO();
   const activity = h('section', { class: 'card activity', 'aria-labelledby': 'g-act' },
     h('div', { class: 'row-h' }, h('h2', { id: 'g-act', text: 'Recent activity' }), h('a', { class: 'more', href: 'budget.html' }, 'View all ', icon('chev'))),
-    act.length ? h('ul', { class: 'alist act-list', 'data-activity': '' }, act.map((r) => h('li', { 'data-act': '' }, h('div', { class: 'bn' }, h('b', { text: r.name }), h('small', { text: (r.date === todayIso ? 'Today' : fmtShort(r.date)) + ' \u00b7 ' + r.src + (r.pending ? ' \u00b7 Pending' : '') })),
+    act.length ? h('ul', { class: 'alist act-list', 'data-activity': '' }, act.map((r) => h('li', { 'data-act': '' }, merchantMark(r.name, r.logo), h('div', { class: 'bn' }, h('b', { text: r.name }), h('small', { text: (r.date === todayIso ? 'Today' : fmtShort(r.date)) + ' \u00b7 ' + r.src + (r.pending ? ' \u00b7 Pending' : '') })),
       h('b', { class: 'amt ' + (r.amt < 0 ? 'neg' : 'pos'), text: (r.amt < 0 ? '\u2212' : '+') + money(Math.abs(r.amt)) }))))
       : h('p', { class: 'muted', 'data-activity-empty': '', text: 'Connect a bank in the app or add spending to see activity.' }));
 
