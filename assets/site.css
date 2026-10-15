@@ -452,3 +452,11 @@ details.more-d[open]>summary{margin-bottom:8px}
 .c-plaid{background:rgba(255,255,255,.65)}
 .c-flow li::before{background:#fff;border-color:#0fb6c4}
 .c-flow li::after{background:rgba(15,150,180,.3)}
+
+/* App screenshot gallery: identical frame, size and even gaps */
+.swipe{gap:18px;justify-content:safe center}
+.swipe figure{width:190px}
+.swipe .phone{width:100%}
+@media (max-width:640px){.swipe figure{width:150px}}
+/* Camera dot instead of a bar, so the app header is never covered */
+.phone::after{top:15px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:rgba(0,0,0,.55)}
