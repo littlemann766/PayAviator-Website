@@ -409,3 +409,4 @@ details.more-d[open]>summary{margin-bottom:8px}
 .join-hl:hover,.navlinks a.join-hl:hover{background:#fcd34d;color:#0d2a55}
 .actions .btn.join-hl{background:#fbbf24;color:#0d2a55;border:2px solid #d99a06}
 @media(max-width:860px){.navlinks a.join-hl{text-align:center;padding:14px 16px;font-size:1.05em}}
+.ill.real{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}.ill.real img{width:min(300px,88%);height:auto;border-radius:16px;border:3px solid #0d2a55;box-shadow:0 8px 20px rgba(13,42,85,.18)}.ill.real .cap{flex-basis:100%;text-align:center}
