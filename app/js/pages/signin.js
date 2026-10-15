@@ -8,7 +8,7 @@ const GOOGLE = () => {
   return document.importNode(s.documentElement, true);
 };
 
-let mode = 'signin';
+let mode = q.get('mode') === 'signup' ? 'signup' : 'signin';
 let card;
 
 function field(id, label, type, ph, ac, errText) {
@@ -20,7 +20,7 @@ function field(id, label, type, ph, ac, errText) {
 
 function intro() {
   return h('section', { class: 'si-intro' },
-    h('a', { class: 'brand dark', href: 'signin.html' }, h('img', { src: 'img/logo-64.png', width: 40, height: 40, alt: '' }), h('span', { text: 'PayAviator' })),
+    h('a', { class: 'brand dark', href: '../index.html' }, h('img', { src: 'img/logo-64.png', width: 40, height: 40, alt: '' }), h('span', { text: 'PayAviator' })),
     h('h1', { text: 'All your accounts in one place.' }),
     h('p', { class: 'lead', text: 'See what is safe to spend, then manage your bills, income and budget on the web and on Android. One account, always in sync.' }),
     h('ul', { class: 'ticks' }, ['The same Safe to Spend gauge as the app', 'Changes sync to your phone automatically', 'Sign in with Google or email'].map((t) => h('li', null, icon('check'), h('span', { text: t })))));
@@ -28,7 +28,7 @@ function intro() {
 
 function shell(cardNode) {
   root.replaceChildren(h('div', { class: 'si-wrap' }, intro(), cardNode),
-    h('p', { class: 'si-foot' }, '\u00a9 2026 PayAviator \u00b7 ', h('a', { href: '../privacy.html', text: 'Privacy' }), ' \u00b7 ', h('a', { href: '../terms.html', text: 'Terms' }), ' \u00b7 support@payaviator.app'));
+    h('p', { class: 'si-foot' }, h('a', { href: '../index.html', text: '\u2190 Back to payaviator.app' }), ' \u00b7 ', '\u00a9 2026 PayAviator \u00b7 ', h('a', { href: '../privacy.html', text: 'Privacy' }), ' \u00b7 ', h('a', { href: '../terms.html', text: 'Terms' }), ' \u00b7 support@payaviator.app'));
 }
 
 function goHome() { location.replace('index.html'); }

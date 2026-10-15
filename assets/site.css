@@ -460,3 +460,9 @@ details.more-d[open]>summary{margin-bottom:8px}
 @media (max-width:640px){.swipe figure{width:150px}}
 /* Camera dot instead of a bar, so the app header is never covered */
 .phone::after{top:15px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:rgba(0,0,0,.55)}
+.navlinks a.nav-login{border:2px solid var(--blue);color:var(--navy);border-radius:999px;padding:7px 16px}
+.navlinks a.nav-login:hover{background:rgba(11,127,212,.1)}
+.navlinks .btn.nav-signup{margin-left:4px}
+@media(max-width:860px){.navlinks a.nav-login{text-align:center;padding:12px 14px}.navlinks .btn.nav-signup{margin:6px 0 0}}
+.navlinks a{white-space:nowrap}
+@media(min-width:861px){.navlinks{gap:2px}.navlinks a{padding:9px 9px;font-size:14.5px}.navlinks a.join-hl{padding:8px 13px}.navlinks a.nav-login{padding:7px 14px}.navlinks .btn{margin-left:4px;padding:0 13px}}

@@ -167,6 +167,7 @@ function accountMenu() {
     h('div', { class: 'menu-h' }, h('b', { text: name }), h('small', { text: u.email || '' })),
     h('a', { role: 'menuitem', href: 'settings.html' }, icon('user'), h('span', { text: 'Profile and settings' })),
     h('a', { role: 'menuitem', href: 'accounts.html' }, icon('bank'), h('span', { text: 'Linked banks' })),
+    h('a', { role: 'menuitem', href: '../index.html' }, icon('eye'), h('span', { text: 'Back to payaviator.app' })),
     h('a', { role: 'menuitem', href: 'mailto:support@payaviator.app' }, icon('mail'), h('span', { text: 'Support' })), h('hr'),
     h('button', { role: 'menuitem', class: 'mi', type: 'button', 'data-signout': '', onclick: signOutNow }, icon('logout'), h('span', { text: 'Sign out' })));
   const btn = h('button', { class: 'av-btn', type: 'button', 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'aria-controls': 'acct-menu', 'aria-label': 'Account menu' },
