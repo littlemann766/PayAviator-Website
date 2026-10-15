@@ -33,7 +33,7 @@ export function authMessage(e) {
   if (/requires-recent-login/.test(c)) return 'For your security, please sign out, sign in again, and then delete your account right away.';
   if (c === 'pa/cooldown') return e.message;
   if (c === 'pa/unavailable') return 'Sign-in is unavailable right now (could not load the sign-in service). Check your connection and reload.';
-  return 'Sign-in failed. Please try again.';
+  return 'Sign-in failed. Please try again.' + (c ? ' (' + c + ')' : '');
 }
 
 const A = { state: 'loading', user: null, fb: null, auth: null, demo: false, subs: new Set() };
@@ -84,6 +84,7 @@ export const auth = {
     try { const r = await A.fb.signInWithPopup(A.auth, p); A.user = pub(r.user); return A.user; }
     catch (e) {
       const c = (e && e.code) || '';
+      try { console.warn('[auth] Google sign-in error:', c, e && e.message); } catch (_) {}
       if (/popup-blocked|operation-not-supported-in-this-environment|web-storage-unsupported/.test(c) || (mobile && /internal-error/.test(c))) { await A.fb.signInWithRedirect(A.auth, p); return null; }
       throw e;
     }
