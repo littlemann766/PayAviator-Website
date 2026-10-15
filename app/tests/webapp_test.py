@@ -204,6 +204,21 @@ def run():
         q.evaluate("document.documentElement.style.setProperty('font-size','24px')")
         check('sign-in page: no horizontal scroll at 360 @1.5x', q.evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth") <= 0); c.close()
 
+        print('[account unify + delete account]')
+        pg.goto(B + 'signin.html?demo=1'); pg.wait_for_url('**/index.html')
+        pg.goto(B + 'settings.html#plan'); pg.wait_for_selector('[data-act=portal]')
+        check('settings has Plan & billing with Manage subscription and a Delete my account button', pg.locator('#plan').count() == 1 and pg.locator('[data-act=delete-account]').count() == 1)
+        pg.click('[data-act=delete-account]'); pg.wait_for_selector('.sheet')
+        pg.locator('.sheet').get_by_role('button', name='Delete my account forever').click(); pg.wait_for_timeout(300)
+        check('delete account: blocked until DELETE is typed', '/signin.html' not in pg.url and pg.locator('.sheet').count() == 1)
+        pg.locator('.sheet input').first.fill('DELETE'); pg.locator('.sheet').get_by_role('button', name='Delete my account forever').click()
+        pg.wait_for_url('**/signin.html?deleted=1', timeout=8000)
+        check('delete account: signs out, clears local data, shows confirmation', pg.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('pa_demo_server_v1:')).length") == 0)
+        for u in ('account.html', 'account/index.html'):
+            t = open(os.path.join(ROOT, u)).read()
+            check(f'site /{u} redirects to /app/settings.html#plan', 'url=/app/settings.html#plan' in t and 'location.replace' in t)
+        pg.goto(B + 'signin.html?demo=1'); pg.wait_for_url('**/index.html')
+
         print('[security]')
         html = [open(os.path.join(ROOT, 'app', f'{n}.html')).read() for n in PAGES]
         check('every page has a CSP meta, no inline script/style/handlers', all('Content-Security-Policy' in x and not re.search(r'<script(?![^>]*\bsrc=)[^>]*>', x) and ' style=' not in x and not re.search(r'\son\w+=', x) for x in html))

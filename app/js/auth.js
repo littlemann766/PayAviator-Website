@@ -30,6 +30,7 @@ export function authMessage(e) {
   if (/too-many-requests/.test(c)) return 'Too many tries. Please wait a few minutes and try again.';
   if (/network/.test(c)) return 'Can\u2019t reach the sign-in service. Check your connection and try again.';
   if (/user-disabled/.test(c)) return 'This account is disabled. Contact support@payaviator.app.';
+  if (/requires-recent-login/.test(c)) return 'For your security, please sign out, sign in again, and then delete your account right away.';
   if (c === 'pa/cooldown') return e.message;
   if (c === 'pa/unavailable') return 'Sign-in is unavailable right now (could not load the sign-in service). Check your connection and reload.';
   return 'Sign-in failed. Please try again.';
@@ -116,6 +117,13 @@ export const auth = {
     if (A.demo) return 'demo-token';
     const u = A.auth && A.auth.currentUser; if (!u) throw Object.assign(new Error('Signed out'), { code: 'SIGNIN' });
     return u.getIdToken(force);
+  },
+  /** Permanently delete the Firebase user. Throws code 'auth/requires-recent-login' if the sign-in is too old. */
+  async deleteUser() {
+    if (A.demo) { await this.signOut(); return; }
+    const u = A.auth && A.auth.currentUser; if (!u) throw Object.assign(new Error('Signed out'), { code: 'SIGNIN' });
+    await A.fb.deleteUser(u);
+    A.user = null; notify();
   },
   /** Sign out and clear everything held on this browser. */
   async signOut() {

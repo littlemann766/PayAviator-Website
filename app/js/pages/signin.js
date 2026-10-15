@@ -64,6 +64,7 @@ function viewSignin() {
   card = h('section', { class: 'si-card', 'aria-labelledby': 'si-h' },
     h('h2', { id: 'si-h', text: mode === 'signup' ? 'Create account' : 'Sign in' }),
     off ? h('div', { class: 'banner', role: 'alert' }, icon('alert'), h('p', null, h('b', { text: 'Sign-in is unavailable right now. ' }), 'We could not load the sign-in service. Check your connection and reload. ', h('button', { class: 'linkbtn', type: 'button', text: 'Reload', onclick: () => location.reload() }))) : null,
+    q.get('deleted') === '1' ? h('div', { class: 'banner', role: 'status' }, icon('check'), h('p', null, h('b', { text: 'Your account was deleted. ' }), 'Thanks for trying PayAviator.')) : null,
     demo ? h('div', { class: 'banner' }, icon('eye'), h('p', null, h('b', { text: 'Demo mode. ' }), 'Sample data on this computer only. Nothing is sent anywhere.')) : null,
     googleBtn, h('div', { class: 'or' }, h('span', { text: 'or use email' })),
     demo ? h('p', { class: 'msg', text: 'Email sign-in is disabled in demo mode.' }) : form,

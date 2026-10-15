@@ -48,6 +48,8 @@ function liveTransport(getToken) {
     push: (items) => call('POST', '/api/sync/push', { items }),
     deleteAll: () => call('DELETE', '/api/sync/all'),
     get: (path) => call('GET', path),
+    post: (path, body) => call('POST', path, body || {}),
+    del: (path) => call('DELETE', path),
   };
 }
 
@@ -110,6 +112,8 @@ function stubTransport(uid) {
       if (p === '/api/billing/status') return { plan: 'free', source: null, linkedBanks: qs.get('bank') === '0' ? 0 : 1, limit: 1, expiresAt: null, productId: null, state: null, cancelAtPeriodEnd: false, periodEnd: null, grandfathered: qs.get('paused') === '1', pausedBanks: qs.get('paused') === '1' ? 1 : 0 };
       throw apiErr('Not found', 'HTTP_404', 404);
     },
+    async post(path) { if (path === '/api/billing/stripe/portal') throw apiErr('Billing is not available in demo mode.', 'NO_STRIPE_CUSTOMER', 400); throw apiErr('Not found', 'HTTP_404', 404); },
+    async del(path) { if (path === '/api/plaid/user') return { ok: true }; throw apiErr('Not found', 'HTTP_404', 404); },
     /** Demo/testing only: act like the phone pushed a change (so conflicts and pulls can be exercised). */
     _phone(kind, id, data, opts = {}) {
       const d = load(), k = kind + '|' + id, cur = d.rows[k];
@@ -339,6 +343,9 @@ export const api = {
   accounts: () => E.transport.get('/api/plaid/accounts'),
   transactions: (limit = 250) => E.transport.get('/api/plaid/transactions?limit=' + limit),
   billing: () => E.transport.get('/api/billing/status'),
+  billingPortal: () => E.transport.post('/api/billing/stripe/portal', {}),
+  /** Delete the whole account: server data first (DELETE /api/plaid/user), then the Firebase user. Caller clears local data. */
+  deletePlaidUser: () => E.transport.del('/api/plaid/user'),
 
   /** Demo/test hook: the stub "server" so tests can simulate the phone. null in live mode. */
   get demo() { return E.transport && E.transport.mode === 'stub' ? { phone: E.transport._phone, reset: E.transport._reset } : null; },
