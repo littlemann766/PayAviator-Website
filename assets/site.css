@@ -446,3 +446,9 @@ details.more-d[open]>summary{margin-bottom:8px}
 .c-flow li::before{background:#fff;border:1.5px solid var(--cyan);color:var(--navy);font-weight:700}
 .c-flow li:last-child::before{background:#fff;border-color:var(--green);color:var(--green-d)}
 .c-flow li::after{width:1.5px;background:rgba(11,127,212,.22)}
+/* Connected accounts card: soft pale-cyan tint */
+.connect{background:linear-gradient(160deg,#eaf7fb 0,#dff1fa 100%);border:1px solid rgba(22,180,200,.38);box-shadow:0 8px 24px rgba(13,42,85,.08)}
+.c-three .ck{background:#fff;border-color:rgba(22,180,200,.45)}
+.c-plaid{background:rgba(255,255,255,.65)}
+.c-flow li::before{background:#fff;border-color:#0fb6c4}
+.c-flow li::after{background:rgba(15,150,180,.3)}
