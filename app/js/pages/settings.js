@@ -58,6 +58,7 @@ function render(main) {
   const method = (u.providers || []).includes('google.com') ? 'Google' : (u.providers || []).includes('password') ? 'Email and password' : auth.demo ? 'Demo' : 'Google or email';
 
   main.replaceChildren(h('div', { class: 'grid two' },
+    h('section', { class: 'card' }, h('ul', { class: 'slist' }, h('li', null, h('span', { class: 'ib' }, icon('bank')), h('div', { class: 'bn' }, h('b', { text: 'Connected Accounts' }), h('small', { text: 'Linked banks, cash and what counts in Available Now' })), h('a', { class: 'lnk', href: 'accounts.html', 'data-connected-accounts': '', text: 'Open' })))),
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Profile' })), h('ul', { class: 'slist' },
       li('user', 'Name', u.displayName || (u.email || '').split('@')[0] || 'You'),
       li('mail', 'Email', u.email || '', u.emailVerified ? h('span', { class: 'tag ok', text: 'Verified' }) : h('span', { class: 'tag warn', text: 'Not verified' })),

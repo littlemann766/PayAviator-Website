@@ -1,7 +1,8 @@
 import { h, icon, money, fmtShort, num } from '../util.js';
 import { bootPage } from '../ui.js';
 import { api } from '../api.js';
-import { acctKind, acctBal, acctIncluded, setAcctChoice } from '../calc.js';
+import { acctKind, acctBal, acctIncluded, setAcctChoice, readCash, writeCash } from '../calc.js';
+import { toast } from '../ui.js';
 import { bar, emptyState } from '../views.js';
 
 const S = { loading: true, err: null, accounts: [], items: [], errors: [], tx: [], billing: null };
@@ -39,6 +40,15 @@ function itemCard({ item, accounts }) {
     paused ? h('p', { class: 's-note', text: 'You can disconnect a paused bank in the Android app.' }) : null);
 }
 
+function cashCard() {
+  const w = readCash();
+  const inp = h('input', { id: 'cash-spendable', type: 'number', min: '0', step: '0.01', inputmode: 'decimal', value: w.spendable ? String(w.spendable) : '' });
+  return h('section', { class: 'card', 'data-cash': '' },
+    h('div', { class: 'row-h' }, h('span', { class: 'ib' }, icon('cash')), h('div', null, h('h2', { text: 'Cash' }), h('p', { class: 'muted', text: 'Physical cash only.' }))),
+    h('label', { for: 'cash-spendable', text: 'Spendable cash' }), h('p', { class: 'muted', text: 'Counts toward Available Now and Safe to Spend.' }), inp,
+    h('div', { class: 'dlg-f' }, h('button', { class: 'btn primary', type: 'button', 'data-save-cash': '', text: 'Save', onclick: () => { writeCash(inp.value); toast('Cash saved on this device.'); rerender(); } })));
+}
+
 function render(main) {
   const groups = group(), bl = S.billing;
   const paused = groups.filter((g) => g.item.paused || S.errors.some((e) => e.item_id === g.item.item_id && (e.code === 'ITEM_PAUSED' || e.paused))).length;
@@ -47,7 +57,7 @@ function render(main) {
   const limit = bl && bl.limit != null ? num(bl.limit) : (bl ? null : 1);
   const pausedN = bl ? num(bl.pausedBanks) : paused;
 
-  const left = [];
+  const left = [cashCard()];
   if (S.loading) left.push(h('section', { class: 'card', 'aria-busy': 'true' }, h('p', { class: 'muted', text: 'Loading your linked banks\u2026' })));
   else if (S.err) left.push(h('section', { class: 'card', role: 'alert' }, h('div', { class: 'row-h' }, h('span', { class: 'ib' }, icon('alert')), h('div', null, h('h2', { text: 'Could not load banks' }), h('p', { class: 'muted', text: S.err.code === 'NETWORK' ? 'Can\u2019t reach PayAviator right now.' : (S.err.message || 'Please try again.') }))), h('button', { class: 'btn ghost', type: 'button', onclick: load }, icon('refresh'), h('span', { text: 'Try again' }))));
   else if (!groups.length) left.push(emptyState({ icn: 'bank', title: 'No banks linked yet', text: 'Link a bank in the PayAviator Android app. It will show up here, read-only.' }));
@@ -65,4 +75,4 @@ function render(main) {
   main.replaceChildren(h('div', { class: 'banner' }, icon('eye'), h('p', null, h('b', { text: 'Linked banks are read-only on the web. ' }), 'Connect or remove a bank in the Android app. Bills, income and budget are editable here.')),
     h('div', { class: 'grid two' }, h('div', { class: 'col-r' }, left), h('div', { class: 'col-r' }, plan, plus)));
 }
-bootPage({ key: 'accounts.html', title: 'Accounts', sub: 'Your linked banks and plan.', render: (m) => render(m) }).then((sh) => { if (sh) { rerender = () => render(sh.main); load(); } });
+bootPage({ key: 'accounts.html', title: 'Connected Accounts', sub: 'Your linked banks and plan.', render: (m) => render(m) }).then((sh) => { if (sh) { rerender = () => render(sh.main); load(); } });

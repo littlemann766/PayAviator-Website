@@ -172,6 +172,11 @@ export function readChoices() { try { const c = JSON.parse(localStorage.getItem(
 export function acctChoice(a) { const c = readChoices(); for (const k of acctChoiceKeys(a)) if (typeof c[k] === 'boolean') return c[k]; return undefined; }
 export function setAcctChoice(a, on) { const c = readChoices(); acctChoiceKeys(a).forEach((k) => { c[k] = !!on; }); localStorage.setItem(CHOICES_KEY, JSON.stringify(c)); }
 const savingsLike = (a) => /^(savings|money market|cd|certificate of deposit|hsa|cash isa|prepaid)$/.test(nrm(a.subtype));
+export const CASH_KEY = 'payaviator_cash_wallet_v950';
+export function readCash() { try { const w = JSON.parse(localStorage.getItem(CASH_KEY) || '{}') || {}; return { spendable: Math.max(0, num(w.spendable)), saved: Math.max(0, num(w.saved)), inBank: !!(w.inBankAccount || w.sameAsAccountId) }; } catch (_) { return { spendable: 0, saved: 0, inBank: false }; } }
+export function writeCash(spendable) { const w = readCash(); localStorage.setItem(CASH_KEY, JSON.stringify({ spendable: Math.max(0, num(spendable)), saved: w.saved })); }
+/* Cash on hand counted in Available Now (app: spendable + set-aside cash, unless already held in a bank account). */
+export const cashOnHand = () => { const w = readCash(); return w.inBank ? 0 : cents(w.spendable + w.saved); };
 export function acctIncluded(a) {
   if (nrm(a.type) !== 'depository') return false;
   const c = acctChoice(a);
@@ -183,14 +188,15 @@ export function safeToSpend(data, accounts, now = new Date()) {
   const y = now.getFullYear(), m = now.getMonth();
   const ms = monthState(data, y, m);
   const inc = accounts.filter(acctIncluded);
-  const bankAvailable = inc.reduce((s, a) => s + acctBal(a, 'available', true), 0);
+  const cashAmt = cashOnHand();
+  const bankAvailable = inc.reduce((s, a) => s + acctBal(a, 'available', true), 0) + cashAmt;
   const bankSavings = accounts.filter((a) => acctKind(a) === 'savings').reduce((s, a) => s + acctBal(a), 0);
   const creditUsed = accounts.filter((a) => acctKind(a) === 'debt').reduce((s, a) => s + acctBal(a, 'current'), 0);
-  const source = inc.length ? 'bank' : 'ledger';
+  const source = (inc.length || cashAmt > 0) ? 'bank' : 'ledger';
   const available = Math.max(0, source === 'bank' ? bankAvailable : ms.available);
   const cushion = cents(cushionAmount(data.cushion, available));
   const safe = cents(Math.max(0, available - cushion));
-  return { ...ms, source, available: cents(available), bankAvailable: cents(bankAvailable), savings: cents(bankSavings), creditUsed: cents(creditUsed), cushion, safe, hasBank: inc.length > 0 };
+  return { ...ms, source, available: cents(available), bankAvailable: cents(bankAvailable), savings: cents(bankSavings), creditUsed: cents(creditUsed), cash: cashAmt, cushion, safe, hasBank: inc.length > 0 };
 }
 
 /* Gauge scale (app: pp973Scale + niceMax). */

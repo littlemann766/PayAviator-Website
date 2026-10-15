@@ -4,7 +4,7 @@ import { auth } from './auth.js';
 import { api } from './api.js';
 
 export const IDLE_MS = 30 * 60 * 1000; // idle sign-out for shared devices
-const NAV = [['home', 'Home', 'index.html'], ['bills', 'Bills', 'bills.html'], ['coins', 'Income', 'income.html'], ['pie', 'Budget', 'budget.html'], ['bank', 'Accounts', 'accounts.html'], ['gear', 'Settings', 'settings.html']];
+const NAV = [['home', 'Home', 'index.html'], ['bills', 'Bills', 'bills.html'], ['coins', 'Income', 'income.html'], ['pie', 'Budget', 'budget.html'], ['gear', 'Settings', 'settings.html']];
 
 /* ---------------------------------------------------------------- toast */
 let toastEl, toastT;
@@ -158,7 +158,8 @@ function paintSync() {
 }
 
 function navLinks(key, cls) {
-  return NAV.map(([i, l, href]) => h('a', { href, class: href === key ? 'on' : null, 'aria-current': href === key ? 'page' : null }, icon(i), h('span', { text: l })));
+  const cur = key === 'accounts.html' ? 'settings.html' : key; // Connected Accounts lives under Settings, like the app
+  return NAV.map(([i, l, href]) => h('a', { href, class: href === cur ? 'on' : null, 'aria-current': href === cur ? 'page' : null }, icon(i), h('span', { text: l })));
 }
 
 function accountMenu() {

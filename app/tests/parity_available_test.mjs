@@ -14,4 +14,6 @@ let s = safeToSpend(d, A); ck('default: checking only = 1240.50', s.bankAvailabl
 setAcctChoice(A[0], false); setAcctChoice(A[1], true); s = safeToSpend(d, A); ck('toggle: checking off, savings on = 3000', s.bankAvailable === 3000, s.bankAvailable);
 setAcctChoice(A[2], true); setAcctChoice(A[3], true); s = safeToSpend(d, A); ck('credit/loan never counted', s.bankAvailable === 3000 && !acctIncluded(A[2]) && !acctIncluded(A[4]));
 delete store.payaviator_account_choices_v920; s = safeToSpend(d, A); ck('choices cleared = 1240.50', s.bankAvailable === 1240.5);
+store.payaviator_cash_wallet_v950 = JSON.stringify({ spendable: 150, saved: 0 }); s = safeToSpend(d, A); ck('cash on hand 150 + checking = 1390.50 (same as the app)', s.bankAvailable === 1390.5, s.bankAvailable);
+store.payaviator_cash_wallet_v950 = JSON.stringify({ spendable: 150, saved: 0, inBankAccount: true }); s = safeToSpend(d, A); ck('cash already in a bank account not double counted', s.bankAvailable === 1240.5);
 process.exit(fails ? 1 : 0);
