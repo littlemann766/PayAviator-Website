@@ -142,6 +142,8 @@ function seedDemo(db) {
   put('income', 'profile', { profile: true, type: 'salary', wage: null, salary: '0' });
   put('spending', 'demo-sp1', { id: 'demo-sp1', name: 'Groceries', amount: 84.2, date: day(Math.max(1, now.getDate() - 2)), notes: '', flow: 'spending', source: 'manual', enteredAt: new Date(t).toISOString(), category: 'Groceries' });
   put('spending', 'demo-sp2', { id: 'demo-sp2', name: 'Coffee', amount: 6.5, date: day(Math.max(1, now.getDate() - 1)), notes: '', flow: 'spending', source: 'manual', enteredAt: new Date(t).toISOString(), category: 'Dining out' });
+  put('spending', 'demo-sp3', { id: 'demo-sp3', name: 'Gas', amount: 41.75, date: day(Math.max(1, now.getDate() - 4)), notes: '', flow: 'spending', source: 'manual', enteredAt: new Date(t).toISOString(), category: 'Transport' });
+  put('spending', 'demo-sp4', { id: 'demo-sp4', name: 'Returned jacket', amount: 35, date: day(Math.max(1, now.getDate() - 5)), notes: '', flow: 'refund', source: 'manual', enteredAt: new Date(t).toISOString(), category: 'Other' });
   put('cushion', C.CUSHION_ID, { type: 'dollar', amount: 0, percent: 0 });
   put('budget', C.budgetId(monthKey(y, m)), { month: monthKey(y, m), amount: 4200, categories: { Groceries: 600, 'Dining out': 200, Transport: 250, Utilities: 380, Subscriptions: 60 } });
   put('goal', 'demo-goal1', { id: 'demo-goal1', name: 'Emergency fund', target: 5000, saved: 1800, targetDate: '', transactions: [] });
@@ -165,10 +167,16 @@ function demoAccounts(qs) {
 function demoTransactions(qs) {
   if (qs.get('bank') !== '1' && qs.get('paused') !== '1') return { transactions: [], errors: [] };
   const d = (n) => toISO(new Date(Date.now() - n * 86400000));
+  const T = (id, n, name, amount, prim, det, pending = false) => ({ transaction_id: id, account_id: 'a1', date: d(n), name, merchant_name: name, amount, pending, institution_name: 'Demo Bank', personal_finance_category: { primary: prim, detailed: det } });
   return { transactions: [
-    { transaction_id: 't1', account_id: 'a1', date: d(0), name: 'Grocery Mart', merchant_name: 'Grocery Mart', amount: 52.18, pending: true, institution_name: 'Demo Bank' },
-    { transaction_id: 't2', account_id: 'a1', date: d(1), name: 'Coffee House', merchant_name: 'Coffee House', amount: 6.5, pending: false, institution_name: 'Demo Bank' },
-    { transaction_id: 't3', account_id: 'a1', date: d(3), name: 'Payroll deposit', merchant_name: 'Acme Co.', amount: -2180.55, pending: false, institution_name: 'Demo Bank' },
+    T('t1', 0, 'Grocery Mart', 52.18, 'FOOD_AND_DRINK', 'FOOD_AND_DRINK_GROCERIES', true),
+    T('t2', 1, 'Coffee House', 6.5, 'FOOD_AND_DRINK', 'FOOD_AND_DRINK_COFFEE'),
+    T('t3', 3, 'Acme Co.', -2180.55, 'INCOME', 'INCOME_WAGES'),
+    T('t4', 2, 'Speedway', 38.9, 'TRANSPORTATION', 'TRANSPORTATION_GAS'),
+    T('t5', 1, 'Netflix', 15.49, 'ENTERTAINMENT', 'ENTERTAINMENT_TV_AND_MOVIES'),
+    T('t6', 2, 'Chipotle', 12.35, 'FOOD_AND_DRINK', 'FOOD_AND_DRINK_RESTAURANT'),
+    T('t7', 1, 'Amazon', 29.99, 'GENERAL_MERCHANDISE', 'GENERAL_MERCHANDISE_ONLINE_MARKETPLACES'),
+    T('t8', 0, 'Card payment', 300, 'LOAN_PAYMENTS', 'LOAN_PAYMENTS_CREDIT_CARD_PAYMENT'),
   ], errors: [] };
 }
 
