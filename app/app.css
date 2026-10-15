@@ -325,3 +325,4 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .act-list li[role=button]{cursor:pointer}.act-list li[role=button]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:12px}
 .act-sub{display:block;opacity:.8}
 .info-dl{margin:0}.info-row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.12)}.info-row dt{color:var(--muted);flex:none}.info-row dd{margin:0;text-align:right;font-weight:700;overflow-wrap:anywhere}
+.showpaid{display:flex;align-items:center;gap:8px;margin:0 0 .75rem;color:var(--muted);font-weight:700}.showpaid input{width:20px;height:20px}

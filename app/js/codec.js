@@ -32,7 +32,9 @@ export function decodeBill(id, w, ctx = {}) {
   }
   const moves = isObj(w.dateMoves) ? w.dateMoves : {};
   const due = typeof w.due === 'string' ? w.due : '';
-  const paidOnDue = occ[due] && occ[due].paid != null ? occ[due].paid > 0 : !!w.paid;
+  /* `paid` is the bill's own fallback flag. For a RECURRING bill it must stay the raw wire flag (the app's b.paid): deriving it from the first
+     due date made every later occurrence without its own entry look Paid on the web (the Child Support / Rent / Amanda mismatch). */
+  const paidOnDue = w.recurring ? !!w.paid : (occ[due] && occ[due].paid != null ? occ[due].paid > 0 : !!w.paid);
   const cm = ctx.catMap || {};
   const category = (typeof w.category === 'string' && w.category.trim()) || cm['id:' + (w.id != null ? w.id : id)] || cm['name:' + String(w.name || '').trim().toLowerCase()] || '';
   return {
