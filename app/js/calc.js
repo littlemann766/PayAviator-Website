@@ -152,19 +152,38 @@ export function acctKind(a) {
   if (t === 'depository' && /checking|cash management/.test(st)) return 'checking';
   return t === 'depository' ? 'cash' : 'other';
 }
-export function acctBal(a, which = 'available') {
+export function acctBal(a, which = 'available', signed = false) {
   const b = a.balances || {};
   const av = a.available ?? b.available, cur = a.current ?? b.current ?? a.balance;
-  return Math.max(0, num(which === 'current' ? (cur ?? av) : (av ?? cur)));
+  const v = num(which === 'current' ? (cur ?? av) : (av ?? cur));
+  return signed ? v : Math.max(0, v);
 }
-export const acctIncluded = (a) => ['checking', 'cash'].includes(acctKind(a));
+/* Same rule as the Android app (PayAviatorAvailableNow): checking only by default (savings, money market, CD, HSA, prepaid are left out),
+   credit/loan/investment never count, and the per-account Include/Exclude choice (payaviator_account_choices_v920) wins. */
+export const CHOICES_KEY = 'payaviator_account_choices_v920';
+const nrm = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+export function acctChoiceKeys(a) {
+  const id = String(a.id || a.account_id || a.accountId || '');
+  const mask = nrm(a.mask), inst = nrm(a.institutionName || a.institution || a.institution_name || 'Connected institution');
+  const first = mask ? [inst, mask, nrm(a.type), nrm(a.subtype), nrm(a.officialName || a.official_name || a.name)].join('|') : (id || [inst, nrm(a.type), nrm(a.subtype), nrm(a.name)].join('|'));
+  return [first, id].filter(Boolean);
+}
+export function readChoices() { try { const c = JSON.parse(localStorage.getItem(CHOICES_KEY) || '{}'); return c && typeof c === 'object' && !Array.isArray(c) ? c : {}; } catch (_) { return {}; } }
+export function acctChoice(a) { const c = readChoices(); for (const k of acctChoiceKeys(a)) if (typeof c[k] === 'boolean') return c[k]; return undefined; }
+export function setAcctChoice(a, on) { const c = readChoices(); acctChoiceKeys(a).forEach((k) => { c[k] = !!on; }); localStorage.setItem(CHOICES_KEY, JSON.stringify(c)); }
+const savingsLike = (a) => /^(savings|money market|cd|certificate of deposit|hsa|cash isa|prepaid)$/.test(nrm(a.subtype));
+export function acctIncluded(a) {
+  if (nrm(a.type) !== 'depository') return false;
+  const c = acctChoice(a);
+  return c !== undefined ? c : !savingsLike(a);
+}
 
 /** Safe to Spend (app: pp967 state()). Linked spendable accounts are the authority when present; otherwise the ledger. */
 export function safeToSpend(data, accounts, now = new Date()) {
   const y = now.getFullYear(), m = now.getMonth();
   const ms = monthState(data, y, m);
   const inc = accounts.filter(acctIncluded);
-  const bankAvailable = inc.reduce((s, a) => s + acctBal(a), 0);
+  const bankAvailable = inc.reduce((s, a) => s + acctBal(a, 'available', true), 0);
   const bankSavings = accounts.filter((a) => acctKind(a) === 'savings').reduce((s, a) => s + acctBal(a), 0);
   const creditUsed = accounts.filter((a) => acctKind(a) === 'debt').reduce((s, a) => s + acctBal(a, 'current'), 0);
   const source = inc.length ? 'bank' : 'ledger';
