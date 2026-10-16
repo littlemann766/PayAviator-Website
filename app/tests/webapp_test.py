@@ -246,6 +246,26 @@ def run():
         pg.evaluate("sessionStorage.setItem('x','1')")
         pg.goto(B + 'index.html')
 
+        print('[nav]')
+        for w in (320, 360, 390, 430, 768, 899, 1280, 1920):
+            c = b.new_context(viewport={'width': w, 'height': 800}); c.route('https://www.gstatic.com/**', lambda r: r.abort()); q = c.new_page()
+            q.goto(B + 'signin.html?demo=1'); q.wait_for_url('**/index.html')
+            bad = []
+            for n in PAGES[1:]:
+                if n == 'signin': continue
+                q.goto(B + n + '.html'); q.wait_for_selector('#main'); q.wait_for_timeout(150)
+                r = q.evaluate("""()=>{const bar=document.querySelector('.tabs'),side=document.querySelector('.side nav');const vis=e=>e&&e.offsetParent!==null||(e&&getComputedStyle(e).position==='fixed'&&getComputedStyle(e).display!=='none');
+                  const nav=getComputedStyle(bar).display!=='none'?bar:side, links=[...nav.querySelectorAll('a')], rs=links.map(a=>a.getBoundingClientRect());
+                  const bottom=nav===bar;const ov=links.some(a=>[a,a.querySelector('span')].some(e=>e.scrollWidth>e.clientWidth+1));
+                  const wd=rs.map(x=>Math.round(x.width*10)/10), hs=rs.map(x=>Math.round(x.height));
+                  const m=document.querySelector('.main'),pb=parseFloat(getComputedStyle(m).paddingBottom);
+                  return {n:links.length,bottom,wd,hs,ov,minH:Math.min(...rs.map(x=>x.height)),minW:Math.min(...rs.map(x=>x.width)),right:Math.max(...rs.map(x=>x.right)),pb,bh:bottom?bar.getBoundingClientRect().height:0,sw:document.documentElement.scrollWidth-document.documentElement.clientWidth}}""")
+                ok = r['n'] == 6 and not r['ov'] and r['sw'] <= 0 and r['minH'] >= 44 and r['right'] <= w + 0.5
+                if r['bottom']: ok = ok and max(r['wd']) - min(r['wd']) <= 1 and len(set(r['hs'])) == 1 and r['pb'] >= r['bh']
+                else: ok = ok and max(r['hs']) - min(r['hs']) <= 1
+                if not ok: bad.append((n, r))
+            check(f'nav at {w}px: 6 tabs, equal widths/heights, >=44px, no label overflow, clears content', not bad, str(bad[:1]))
+            c.close()
         print('[layout]')
         for w, fs, label in [(360, None, '360'), (390, None, '390'), (412, None, '412'), (1280, None, '1280'), (360, 24, '360 @1.5x root font')]:
             c = b.new_context(viewport={'width': w, 'height': 800}); c.route('https://www.gstatic.com/**', lambda r: r.abort()); q = c.new_page()

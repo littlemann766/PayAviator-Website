@@ -16,7 +16,7 @@ h1,h2,h3,p,ul,dl,dd,fieldset,legend{margin:0;padding:0}ul{list-style:none}hr{bor
 .muted{color:var(--muted);font-size:.9rem}
 small{font-size:.8rem;color:var(--muted);display:block;line-height:1.35}
 /* header */
-.app .main{min-height:100vh;padding-bottom:6rem}
+.app .main{min-height:100vh;padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))}
 .top{background:linear-gradient(180deg,#0e2f5f,#0b2550);border-bottom:1px solid rgba(255,255,255,.1);box-shadow:0 6px 18px rgba(4,20,48,.25);position:relative;z-index:5}
 .top-in{max-width:66rem;margin:0 auto;padding:1rem 1rem;display:flex;justify-content:space-between;gap:.75rem;align-items:center}
 .ttl{min-width:0}
@@ -42,11 +42,13 @@ small{font-size:.8rem;color:var(--muted);display:block;line-height:1.35}
 .content{max-width:66rem;margin:0 auto;padding:1.1rem 1rem}
 .side{display:none}
 /* tabs */
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:linear-gradient(180deg,#0e2f5f,#0a2250);border-top:1px solid rgba(255,255,255,.12);padding:.35rem .2rem calc(.35rem + env(safe-area-inset-bottom));box-shadow:0 -8px 22px rgba(4,20,48,.3)}
-.tabs a{display:flex;flex-direction:column;align-items:center;gap:.15rem;text-decoration:none;color:var(--muted);font-size:min(.75rem,2.9vw);font-weight:600;padding:.4rem .05rem;border-radius:14px;min-width:0;transition:background .15s,color .15s}
-.tabs a .ic{width:min(1.4rem,6.2vw);height:min(1.4rem,6.2vw)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(.1rem,.8vw,.35rem);background:linear-gradient(180deg,#0e2f5f,#0a2250);border-top:1px solid rgba(255,255,255,.12);padding:.35rem max(.3rem,env(safe-area-inset-left)) calc(.35rem + env(safe-area-inset-bottom)) max(.3rem,env(safe-area-inset-right));box-shadow:0 -8px 22px rgba(4,20,48,.3)}
+.tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(.1rem,.6vw,.25rem);text-decoration:none;color:var(--muted);font-size:clamp(.6rem,2.7vw,.8rem);line-height:1.15;font-weight:600;min-height:3.25rem;padding:.35rem .1rem;border-radius:14px;min-width:0;transition:background .15s,color .15s}
+.tabs a span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs a .ic{width:clamp(1.15rem,5.6vw,1.5rem);height:clamp(1.15rem,5.6vw,1.5rem)}
 .tabs a:hover{background:rgba(255,255,255,.07)}
 .tabs a.on{color:#fff;background:rgba(22,228,234,.15)}.tabs a.on .ic{color:var(--cyan)}
+@media(min-width:600px){.tabs{left:50%;right:auto;width:min(100%,36rem);transform:translateX(-50%);border-radius:18px 18px 0 0;border-left:1px solid rgba(255,255,255,.12);border-right:1px solid rgba(255,255,255,.12)}.tabs a{font-size:.8rem}.tabs a .ic{width:1.5rem;height:1.5rem}}
 /* cards */
 .card{background:linear-gradient(180deg,#123a73 0,#0d2a55 100%);border:1px solid var(--line);border-radius:var(--r);padding:1.1rem;box-shadow:var(--sh)}
 a.card,.card.link{display:flex;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s,border-color .15s}
