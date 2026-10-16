@@ -53,12 +53,13 @@ export function encodeBill(id, view, prior) {
   w.name = view.name; w.amount = view.amount; w.due = view.due; w.recurring = !!view.recurring;
   w.recurrence = view.recurring ? view.recurrence : 'weekly';
   w.color = view.color;
+  if (view.autopay || (isObj(prior) && 'autopay' in prior)) w.autopay = !!view.autopay;   // the app's "Autopay enabled" checkbox
   const priorCat = isObj(prior) && typeof prior.category === 'string' ? prior.category.trim() : '';
   if (!(view.catFromMap && !priorCat)) { // do not bake the category-map fallback into the record
     if ((isObj(prior) && 'category' in prior) || view.category) w.category = view.category || '';   // never add empty keys the app did not have
   }
   if ((isObj(prior) && 'notes' in prior) || view.notes) w.notes = view.notes || '';
-  if (!isObj(prior)) { w.paid = false; w.notify = false; w.notifyDaysBefore = [0]; w.notifyTime = '09:00'; w.notifySound = 'default'; w.notifyVibrate = true; w.dateMoves = {}; w.autopay = false; }
+  if (!isObj(prior)) { w.paid = false; w.notify = false; w.notifyDaysBefore = [0]; w.notifyTime = '09:00'; w.notifySound = 'default'; w.notifyVibrate = true; w.dateMoves = {}; w.autopay = !!view.autopay; }
   const ov = isObj(w._ov) ? w._ov : {}, pa = isObj(w._pa) ? w._pa : {};
   const viewOcc = isObj(view.occ) ? view.occ : {};
   // one-time bill whose due date changed: its paid state travels with it (the app re-keys the same way)

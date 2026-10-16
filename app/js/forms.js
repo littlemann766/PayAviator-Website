@@ -21,8 +21,8 @@ export function openBill(bill, iso, opts = {}) {
   const occIso = iso || (bill && bill.due);
   const paidNow = edit ? ((bill.occ && bill.occ[occIso] && bill.occ[occIso].paid) || 0) > 0 || (!(bill.occ && bill.occ[occIso] && bill.occ[occIso].paid != null) && !recurring && !!bill.paid) : false;
   const cats = categoryOptions();
-  const values = edit ? { name: bill.name, amount: bill.amount, due: bill.due, repeat: bill.recurring ? bill.recurrence || 'weekly' : 'never', color: bill.color || '#ff0000', category: bill.category || 'Other', notes: bill.notes || '', paid: paidNow }
-    : { name: '', amount: '', due: defDue, repeat: 'monthly', color: '#3ddc97', category: 'Utilities', notes: '', paid: false };
+  const values = edit ? { name: bill.name, amount: bill.amount, due: bill.due, repeat: bill.recurring ? bill.recurrence || 'weekly' : 'never', color: bill.color || '#ff0000', category: bill.category || 'Other', notes: bill.notes || '', autopay: !!bill.autopay, paid: paidNow }
+    : { name: '', amount: '', due: defDue, repeat: 'monthly', color: '#3ddc97', category: 'Utilities', notes: '', autopay: false, paid: false };
   const fields = [
     { name: 'name', label: 'Name', type: 'text', required: true, requiredMsg: 'Enter a name for this bill.', placeholder: 'e.g. Electric', max: 80 },
     { name: 'amount', label: 'Amount', type: 'money', required: true, requiredMsg: 'Enter the bill amount.' },
@@ -31,6 +31,7 @@ export function openBill(bill, iso, opts = {}) {
     { name: 'category', label: 'Category', type: 'select', options: cats.map((c) => ({ v: c, label: c })) },
     { name: 'color', label: 'Color', type: 'color' },
     { name: 'notes', label: 'Note', type: 'textarea', optional: true, max: 300 },
+    { name: 'autopay', type: 'switch', label: 'Autopay', hint: 'Just a reminder that this bill pays itself. Same as the app.' },
     { name: 'paid', type: 'switch', label: recurring ? `Paid for ${fmtShort(occIso)}` : 'Paid', hint: recurring ? 'Marks this one occurrence as paid.' : 'Counts toward what you have paid this month.' },
   ];
   openSheet({
@@ -42,7 +43,7 @@ export function openBill(bill, iso, opts = {}) {
     onSubmit: async (v) => {
       const recur = v.repeat !== 'never';
       const base = edit ? { ...bill } : {}; delete base.id; delete base.updatedAt;
-      const data = { ...base, name: v.name.slice(0, 80), amount: cents(v.amount), due: v.due, recurring: recur, recurrence: recur ? v.repeat : 'weekly', color: v.color, category: v.category, notes: v.notes, catFromMap: !!(edit && bill.catFromMap && v.category === bill.category) };
+      const data = { ...base, name: v.name.slice(0, 80), amount: cents(v.amount), due: v.due, recurring: recur, recurrence: recur ? v.repeat : 'weekly', color: v.color, category: v.category, notes: v.notes, autopay: !!v.autopay, catFromMap: !!(edit && bill.catFromMap && v.category === bill.category) };
       // paid marks live in occ (the app's per-date maps). One-time bill: its own due date; repeating bill: the occurrence being edited.
       const occ = { ...(base.occ || {}) }, target = recur ? (occIso && edit ? occIso : v.due) : v.due;
       if (!recur && edit && bill.due !== v.due) delete occ[bill.due];

@@ -65,3 +65,7 @@ Dates are local calendar `YYYY-MM-DD` strings on both sides. Money is a plain JS
 
 ## Tests
 `node app/tests/roundtrip_test.mjs` (46 checks): runs the app's real sync client (extracted from `index.html`, mock storage) and the web's real `api.js` against Lucian's real backend (in-memory). Covers app→web display (calc occurrences), web→app storage shape, decode∘encode identity for every app record (no field loss), deletes both ways, per-occurrence paid/unpaid, ids, no push loop. Plus `python3 app/tests/webapp_test.py` (demo e2e, 53) and `python3 app/tests/live_contract_test.py` (13).
+
+## Bill sync matrix + sync timing (Oct 2026)
+`node app/tests/bill_sync_matrix_test.mjs [app index.html]` (50 checks) edits every bill field and occurrence state (name, amount, due, recurring/weekly/biweekly/monthly, color, category, notes, autopay, paid, partial, unpaid, deleted occurrence, moved occurrence, recurringUntil, bill delete) on each side and asserts the other side shows the same dates and paid amounts. Only gap found: the web had no Autopay switch (fixed). Known: the web cannot skip or move a single occurrence (it preserves and displays them).
+Sync timing: changes push immediately; pulls on load, sign-in, tab focus/visibility, reconnect and manual refresh; the timer is a 5-minute safety net (was 30 s). App (4.1.9 local branch): 1.5 s debounced push, same pull events, 5-minute timer (was 90 s).

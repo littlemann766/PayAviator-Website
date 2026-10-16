@@ -288,11 +288,12 @@ export const api = {
     E.loaded = true;
     await flush();
     clearInterval(E.poll);
-    E.poll = setInterval(() => { if (!document.hidden) sync(); }, 30000);
+    E.poll = setInterval(() => { if (!document.hidden) sync(); }, 300000);   // slow safety net only; changes push immediately, pulls happen on open/sign-in/focus/visibility/online/manual refresh
     if (!E.wired) {
       E.wired = true;
       addEventListener('online', () => { if (E.loaded) sync(); });
       document.addEventListener('visibilitychange', () => { if (!document.hidden && E.loaded) sync(); });
+      addEventListener('focus', () => { if (E.loaded && Date.now() - (E.lastFocusSync || 0) > 15000) { E.lastFocusSync = Date.now(); sync(); } });
     }
   },
   /** Sign-out: forget everything held in memory (and demo server data stays only under its own key). */
