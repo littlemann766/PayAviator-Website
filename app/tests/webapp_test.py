@@ -11,7 +11,7 @@ class TS(socketserver.ThreadingTCPServer): allow_reuse_address = True; daemon_th
 srv = TS(('127.0.0.1', 0), functools.partial(Q, directory=ROOT)); PORT = srv.server_address[1]
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 B = f'http://localhost:{PORT}/app/'
-PAGES = ['signin', 'index', 'calendar', 'bills', 'income', 'budget', 'accounts', 'settings']
+PAGES = ['signin', 'index', 'calendar', 'bills', 'income', 'budget', 'accounts', 'settings', 'activity']
 fails, passes = [], 0
 def check(name, cond, extra=''):
     global passes
@@ -184,17 +184,40 @@ def run():
 
         print('[recent activity]')
         pg.wait_for_selector('[data-activity]')
-        check('Home shows Recent activity with synced spending only (no bank): sorted, <=10, spending red/neg, refund green/pos',
-              pg.locator('[data-act]').count() >= 3 and pg.locator('[data-act]').count() <= 10 and pg.locator('[data-act] .neg').count() >= 3 and pg.locator('[data-act] .pos').count() >= 1 and pg.locator('[data-act] .neg').first.inner_text().startswith('\u2212$'))
-        check('Recent activity has a View all link to the budget page', pg.locator('.activity a.more').get_attribute('href') == 'budget.html')
+        pg.click('.activity [data-act-range=year]')  # Week can miss early-month demo rows depending on the weekday
+        check('Home shows Recent activity with synced spending only (no bank): sorted, spending red/neg, refund green/pos',
+              pg.locator('[data-act]').count() >= 3 and pg.locator('[data-act] .neg').count() >= 3 and pg.locator('[data-act] .pos').count() >= 1 and pg.locator('[data-act] .neg').first.inner_text().startswith('\u2212$'))
+        check('Recent activity View all opens the activity list page (not Budget) for the selected range', pg.locator('.activity a.more').get_attribute('href') == 'activity.html?range=year')
         pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
         check('with a bank, bank transactions merge in (Pending tag, income green)', pg.locator('[data-act]:has-text("Grocery Mart"):has-text("Pending")').count() == 1 and pg.locator('[data-act]:has-text("Acme Co.") .pos').count() == 1)
         pg.locator('[data-act]:has-text("Grocery Mart")').click(); pg.wait_for_selector('[data-info-sheet]')
         dt = pg.locator('[data-info-sheet]').inner_text()
         check('activity row opens a detail panel: status, date, category, bank, account, type', all(x in dt for x in ['Pending', 'Category', 'Food And Drink', 'Account', 'Demo Checking', 'Money out', 'Date']), dt)
         pg.keyboard.press('Escape'); check('Escape closes the detail panel', pg.locator('[data-info-sheet]').count() == 0)
-        dates = pg.evaluate("[...document.querySelectorAll('[data-act]')].length")
-        check('merged list capped at 10', dates <= 10)
+
+        print('[activity by range]')
+        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
+        cnt = lambda: pg.locator('.activity.card:not(.full) [data-act]').count()
+        wk = cnt()
+        check('Recent activity range tabs: Week selected by default and old rows (Target 9d) are not in Week', pg.locator('.activity [data-act-range=week].active').count() == 1 and wk >= 3 and pg.locator('[data-act]:has-text("Home Depot")').count() == 0)
+        pg.click('.activity [data-act-range=year]')
+        check('Year shows the year list incl. old bank rows, and the list scrolls (scrollable, overflow-y auto)', pg.locator('[data-act]:has-text("Home Depot")').count() == 1 and pg.locator('[data-act]:has-text("Spotify")').count() == 1 and pg.evaluate("getComputedStyle(document.querySelector('.act-scroll')).overflowY") == 'auto' and cnt() >= wk, str(cnt()))
+        check('range tabs change the Spending breakdown range too (shared selection) and View all follows the range', pg.locator('.spend-card [data-range=year].active').count() == 1 and pg.locator('.activity a.more').get_attribute('href') == 'activity.html?range=year')
+        pg.click('.activity [data-act-range=month]')
+        m = cnt()
+        check('Month list is between Week and Year and keeps Pending/Processed labels', wk <= m and pg.locator('[data-act]:has-text("Grocery Mart"):has-text("Pending")').count() == 1 and pg.locator('[data-act]:has-text("Coffee House"):has-text("Processed")').count() == 1)
+        pg.click('.activity a.more'); pg.wait_for_url('**/activity.html?range=month')
+        pg.wait_for_selector('[data-act-range]')
+        check('View all opens activity.html (not budget) with Month selected, a count, and a Back to Home link', pg.locator('[data-act-range=month].active').count() == 1 and pg.locator('[data-back]').get_attribute('href') == 'index.html' and 'item' in pg.inner_text('[data-count]').lower() and 'budget' not in pg.url)
+        pg.goto(B + 'activity.html?bank=1&range=month'); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
+        check('activity page lists every Month row (>= Home Month list) with no scroll box', pg.locator('[data-act]').count() >= m and pg.locator('.act-scroll').count() == 0)
+        pg.click('[data-act-range=year]')
+        check('activity page Year range shows the oldest rows and Pending/Processed labels', pg.locator('[data-act]:has-text("Home Depot"):has-text("Processed")').count() == 1 and pg.locator('[data-act]:has-text("Grocery Mart"):has-text("Pending")').count() == 1 and pg.url.endswith('range=year'))
+        pg.locator('[data-act]:has-text("Home Depot")').click(); pg.wait_for_selector('[data-info-sheet]'); pg.keyboard.press('Escape')
+        pg.click('[data-back]'); pg.wait_for_url('**/index.html')
+        check('Back to Home returns to the dashboard', pg.locator('h1', has_text='Home').count() == 1)
+        pg.goto(B + 'activity.html?range=bogus'); pg.wait_for_selector('[data-act-range]')
+        check('unknown range falls back to Week', pg.locator('[data-act-range=week].active').count() == 1)
         print('[spending breakdown]')
         pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('.spend-card [data-legend]')
         check('breakdown card: default Week + Categories, donut slices drawn, legend rows have % and $', pg.locator('.spend-card [data-range=week].active').count() == 1 and pg.locator('.spend-card [data-breakdown=category].active').count() == 1 and pg.locator('.spend-card [data-slice]').count() >= 2)

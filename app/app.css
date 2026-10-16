@@ -367,3 +367,9 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .pbadge.seal.elite{color:var(--cyan);border:1px solid var(--cyan)}.pbadge.seal.elite i{background:var(--cyan)}
 .card.plan-special{border-left:6px solid}.card.plan-special.elite{border-left-color:var(--cyan)}.card.plan-special.founder{border-left-color:var(--amber)}
 .plan-special .pc-badge{margin:.5rem 0 .7rem}
+
+/* Recent activity by range: scrollable list on Home, full list on activity.html */
+.activity .sp-range{margin:.3rem 0 .6rem}
+.act-scroll{max-height:22rem;overflow-y:auto;overscroll-behavior:contain;padding-right:.25rem}
+.act-scroll:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:12px}
+.activity.full{margin-top:.5rem}.more.back{display:inline-flex;align-items:center;gap:.25rem}.ic.flip{transform:scaleX(-1)}
