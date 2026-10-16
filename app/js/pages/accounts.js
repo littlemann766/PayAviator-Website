@@ -1,4 +1,4 @@
-import { h, icon, money, fmtShort, num } from '../util.js';
+import { h, icon, money, num } from '../util.js';
 import { bootPage } from '../ui.js';
 import { api } from '../api.js';
 import { acctKind, acctBal, acctIncluded, setAcctChoice, readCash, writeCash } from '../calc.js';
@@ -6,14 +6,13 @@ import { toast } from '../ui.js';
 import { bar, emptyState } from '../views.js';
 import { planKey, planInfo, planCard, paintHeadingBadge } from '../plans.js';
 
-const S = { loading: true, err: null, accounts: [], items: [], errors: [], tx: [], billing: null };
+const S = { loading: true, err: null, accounts: [], items: [], errors: [], billing: null };
 let rerender = () => {};
 
 async function load() {
   S.loading = true; S.err = null; rerender();
-  const [a, t, b] = await Promise.allSettled([api.accounts(), api.transactions(250), api.billing()]);
+  const [a, b] = await Promise.allSettled([api.accounts(), api.billing()]);
   if (a.status === 'fulfilled') { S.accounts = a.value.accounts || []; S.items = a.value.items || []; S.errors = a.value.errors || []; } else S.err = a.reason;
-  S.tx = t.status === 'fulfilled' ? (t.value.transactions || []) : [];
   S.billing = b.status === 'fulfilled' ? b.value : null;
   S.loading = false; rerender();
 }
@@ -65,7 +64,6 @@ function render(main) {
   else if (S.err) left.push(h('section', { class: 'card', role: 'alert' }, h('div', { class: 'row-h' }, h('span', { class: 'ib' }, icon('alert')), h('div', null, h('h2', { text: 'Could not load banks' }), h('p', { class: 'muted', text: S.err.code === 'NETWORK' ? 'Can\u2019t reach PayAviator right now.' : (S.err.message || 'Please try again.') }))), h('button', { class: 'btn ghost', type: 'button', onclick: load }, icon('refresh'), h('span', { text: 'Try again' }))));
   else if (!groups.length) left.push(emptyState({ icn: 'bank', title: 'No banks linked yet', text: 'Link a bank in the PayAviator Android app. It will show up here, read-only.' }));
   else groups.forEach((g) => left.push(itemCard(g)));
-  if (!S.loading && !S.err && S.tx.length) left.push(h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Recent bank activity' })), h('ul', { class: 'alist' }, S.tx.slice(0, 8).map((t) => h('li', null, h('div', { class: 'bn' }, h('b', { text: t.merchant_name || t.name || 'Transaction' }), h('small', { text: `${fmtShort(t.date)}${t.institution_name ? ' \u00b7 ' + t.institution_name : ''}` })), h('div', { class: 'amt' }, h('b', { class: num(t.amount) < 0 ? 'pos' : '', text: (num(t.amount) < 0 ? '+' : '') + money(Math.abs(num(t.amount))) }), t.pending ? h('span', { class: 'tag warn', text: 'Pending' }) : null))))));
 
   const pct = limit ? Math.min(100, linked / limit * 100) : 100;
   const plan = special ? planCard(bl) : h('section', { class: 'card plan' }, h('p', { class: 'kicker l', text: 'Your plan' }), h('h2', { 'data-plan': '', text: planName }),
