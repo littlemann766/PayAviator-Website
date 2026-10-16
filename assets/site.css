@@ -485,3 +485,9 @@ details.more-d[open]>summary{margin-bottom:8px}
   .navlinks .btn{margin-left:clamp(4px,.4vw,8px);padding:0 clamp(12px,1vw,18px);white-space:nowrap}
 }
 .nav .brand{flex:none}
+/* header v2: Sign up matches Log in; Get the app pushed to the right edge */
+.navlinks a.nav-signup{margin-left:0}
+@media (min-width:1181px){
+  .navlinks a.nav-signup{padding:7px clamp(12px,1vw,18px)}
+  .navlinks .btn.primary{margin-left:clamp(14px,2vw,40px)}
+}
