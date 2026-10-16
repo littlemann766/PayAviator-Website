@@ -386,3 +386,23 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .act-body[hidden]{display:none}
 .act-panel .act-scroll{max-height:20rem}
 @media (prefers-reduced-motion:reduce){.act-toggle .ic{transition:none}}
+/* Gauge pager (matches the Android app: dots, swipe hint, one gauge per included account) */
+.g-pg{display:flex;flex-direction:column;align-items:center;gap:.45rem;margin:.55rem 0 .6rem}
+.g-dots{display:flex;justify-content:center;align-items:center;gap:.2rem;flex-wrap:wrap}
+.g-dot{appearance:none;position:relative;width:44px;height:30px;padding:0;margin:0;border:0;background:transparent;cursor:pointer}
+.g-dot::before{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border:3px solid #0f809a;border-radius:50%;box-sizing:border-box;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s}
+.g-dot.active::before{border-color:#20edf2;background:#20edf2;box-shadow:0 0 12px rgba(32,237,242,.68);transform:scale(1.05)}
+.g-dot:focus-visible{outline:2px solid #20edf2;outline-offset:-4px;border-radius:10px}
+.g-hint{font-size:.82rem;font-weight:800;color:#c5d3e5}
+.g-wrap{position:relative}
+.g-pager{outline:0}.g-pager:focus-visible{outline:2px solid rgba(32,237,242,.6);outline-offset:2px;border-radius:14px}
+.g-track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.g-track::-webkit-scrollbar{display:none}
+.g-slide{flex:0 0 100%;min-width:0;scroll-snap-align:center;scroll-snap-stop:always;box-sizing:border-box}
+.g-slide .gauge.mini{max-width:23rem}.g-slide .mini .gl text{font-size:17px}
+.g-slide .mini-note{margin-top:.8rem}
+.g-nav{display:none;position:absolute;top:38%;width:44px;height:44px;border-radius:50%;border:1px solid rgba(32,237,242,.45);background:rgba(7,26,59,.85);color:#20edf2;align-items:center;justify-content:center;cursor:pointer;z-index:2;padding:0}
+.g-nav:hover{background:#0c2858;border-color:#20edf2}.g-nav:focus-visible{outline:2px solid #20edf2;outline-offset:2px}
+.g-nav.prev{left:.2rem}.g-nav.prev .ic{transform:rotate(180deg)}.g-nav.next{right:.2rem}
+@media (min-width:700px){.g-nav{display:inline-flex}}
+@media (prefers-reduced-motion:reduce){.g-dot::before{transition:none}}

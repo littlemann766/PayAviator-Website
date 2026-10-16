@@ -1,7 +1,7 @@
 import { h, icon, money, todayISO, fmtShort, toISO } from '../util.js';
 import { bootPage } from '../ui.js';
 import { api } from '../api.js';
-import { safeToSpend, billOccurrences, incomeOnDate, incomeAmountOn } from '../calc.js';
+import { safeToSpend, billOccurrences, incomeOnDate, incomeAmountOn, acctIncluded, acctBal } from '../calc.js';
 import { gaugeSVG } from '../gauge.js';
 import { spendChart } from '../spendchart.js';
 import { activityRows, rangeTabs, actList, normRange } from '../activity.js';
@@ -12,6 +12,8 @@ let tx = { loaded: false, list: [], failed: false };
 let spendRange = 'week', spendMode = 'category';
 let actOpen = (() => { try { return sessionStorage.getItem('pa_act_open') === '1'; } catch (e) { return false; } })();
 let rerender = () => {};
+let gPage = 0;
+const reduceMotion = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 
 async function loadTx() {
   try { const r = await api.transactions(250); tx = { loaded: true, list: Array.isArray(r.transactions) ? r.transactions : [], failed: false }; }
@@ -44,22 +46,69 @@ function nextPaycheck(list) {
 }
 const ib = (n) => h('span', { class: 'ib' }, icon(n));
 
+/* Gauge pager (app: pp967 pages()). Page 0 = All Spendable (Safe to Spend); then one gauge per INCLUDED spendable account (checking and cash accounts,
+   respecting the per-account Include/Exclude choice). Credit, loans and excluded accounts get no page, same as the Android app. */
+function gaugePages(s) {
+  const out = [{ name: 'All Spendable', all: true }];
+  for (const a of acct.accounts.filter(acctIncluded)) {
+    const inst = String(a.institutionName || a.institution_name || a.institution || a.bankName || 'Connected institution');
+    const nm = String(a.name || a.official_name || a.officialName || a.subtype || 'Account'), mask = String(a.mask || '').trim();
+    const name = inst + (mask ? ' \u2022\u2022\u2022\u2022 ' + mask : (nm && nm !== inst ? ' \u2022 ' + nm : ''));
+    out.push({ name, acctName: nm, value: acctBal(a, 'available') });
+  }
+  return out;
+}
+
+function gaugePager(s) {
+  const pages = gaugePages(s), n = pages.length;
+  if (gPage >= n || gPage < 0) gPage = 0;
+  const title = h('h2', { id: 'g-main', 'data-gauge-title': '', text: pages[gPage].name });
+  const slides = pages.map((p, i) => {
+    const body = p.all ? [
+      gaugeSVG(s.safe, { main: true, label: 'Safe to spend' }),
+      h('div', { class: 'safe' }, h('b', { class: 'big', 'data-safe': '', text: money(s.safe) }), h('span', { text: 'Safe to spend' })),
+      s.safe > 0 ? h('p', { class: 'ontrack', text: 'On track: this is what you can spend after bills and the money you protect.' })
+        : h('p', { class: 'ontrack warn', text: 'Nothing is safe to spend right now after bills and the money you protect.' }),
+      h('dl', { class: 'metrics' },
+        h('div', null, h('dt', { text: 'Available now' }), h('dd', { 'data-available': '', text: money(s.available) })),
+        h('div', null, h('dt', { text: 'Savings' }), h('dd', { text: money(s.savings) })),
+        h('div', null, h('dt', { text: 'Cushion' }), h('dd', { text: money(s.cushion) }))),
+      s.source === 'ledger' ? h('p', { class: 'mini-note', text: 'No bank linked: estimated from your income, bills and spending this month.' }) : null,
+    ] : [
+      gaugeSVG(p.value, { main: false, label: p.name + ' spendable' }),
+      h('div', { class: 'safe' }, h('b', { class: 'big', 'data-acct-amt': '', text: money(p.value) }), h('span', { text: 'Spendable in ' + p.acctName })),
+      h('p', { class: 'mini-note', text: 'Bank-reported available balance. Savings stays protected. ' }, h('a', { class: 'lnk', href: 'accounts.html', text: 'Include or exclude accounts' })),
+    ];
+    return h('div', { class: 'g-slide' + (p.all ? ' g-all' : ''), 'data-g-slide': String(i), role: 'group', 'aria-roledescription': 'slide', 'aria-label': `${i + 1} of ${n}: ${p.name}`, 'aria-hidden': i === gPage ? 'false' : 'true' }, body);
+  });
+  const track = h('div', { class: 'g-track', 'data-g-track': '' }, slides);
+  const pager = h('div', { class: 'g-pager', role: 'region', 'aria-roledescription': 'carousel', 'aria-label': 'PayAviator gauges', tabindex: n > 1 ? '0' : null }, track);
+  if (n < 2) return { title, head: [], pager };
+  const dots = h('div', { class: 'g-dots' }, pages.map((p, i) => h('button', { type: 'button', class: 'g-dot' + (i === gPage ? ' active' : ''), 'data-g-dot': String(i), 'aria-label': 'View ' + p.name + ' gauge', 'aria-current': i === gPage ? 'true' : null })));
+  const go = (i, smooth = true) => { const w = track.clientWidth; track.scrollTo({ left: i * w, behavior: smooth && !reduceMotion() ? 'smooth' : 'auto' }); };
+  const setPage = (i) => {
+    if (i === gPage) return; gPage = i; title.textContent = pages[i].name;
+    dots.querySelectorAll('.g-dot').forEach((d, k) => { d.classList.toggle('active', k === i); if (k === i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+    track.querySelectorAll('.g-slide').forEach((el, k) => el.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
+  };
+  let raf = 0;
+  track.addEventListener('scroll', () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; const w = track.clientWidth || 1; setPage(Math.max(0, Math.min(n - 1, Math.round(track.scrollLeft / w)))); }); }, { passive: true });
+  dots.addEventListener('click', (e) => { const b = e.target.closest('[data-g-dot]'); if (b) go(Number(b.dataset.gDot)); });
+  const step = (d) => go((gPage + d + n) % n);
+  const nav = (cls, d, ic, label) => h('button', { type: 'button', class: 'g-nav ' + cls, ['data-g-' + cls]: '', 'aria-label': label, onclick: () => step(d) }, icon(ic));
+  pager.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { e.preventDefault(); step(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); } });
+  const wrap = h('div', { class: 'g-wrap' }, nav('prev', -1, 'chev', 'Previous gauge'), pager, nav('next', 1, 'chev', 'Next gauge'));
+  return { title, head: [h('div', { class: 'g-pg' }, dots, h('div', { class: 'g-hint', text: 'Swipe left or right to view another gauge' }))], pager: wrap, restore: () => { track.scrollLeft = gPage * track.clientWidth; } };
+}
+
 function render(main) {
   const data = api.data(), s = safeToSpend(data, acct.accounts);
   const pausedItems = acct.items.filter((i) => i.paused);
   const pc = nextPaycheck(data.income), nb = nextBills(data.bills), today = todayISO();
 
+  const gp = gaugePager(s);
   const hero = h('section', { class: 'card hero-g', 'aria-labelledby': 'g-main' }, h('span', { class: 'screw l' }), h('span', { class: 'screw r' }),
-    h('p', { class: 'kicker', text: 'PayAviator Gauge' }), h('h2', { id: 'g-main', text: 'All Spendable' }),
-    gaugeSVG(s.safe, { main: true, label: 'Safe to spend' }),
-    h('div', { class: 'safe' }, h('b', { class: 'big', 'data-safe': '', text: money(s.safe) }), h('span', { text: 'Safe to spend' })),
-    s.safe > 0 ? h('p', { class: 'ontrack', text: 'On track: this is what you can spend after bills and the money you protect.' })
-      : h('p', { class: 'ontrack warn', text: 'Nothing is safe to spend right now after bills and the money you protect.' }),
-    h('dl', { class: 'metrics' },
-      h('div', null, h('dt', { text: 'Available now' }), h('dd', { 'data-available': '', text: money(s.available) })),
-      h('div', null, h('dt', { text: 'Savings' }), h('dd', { text: money(s.savings) })),
-      h('div', null, h('dt', { text: 'Cushion' }), h('dd', { text: money(s.cushion) }))),
-    s.source === 'ledger' ? h('p', { class: 'mini-note', text: 'No bank linked: estimated from your income, bills and spending this month.' }) : null);
+    h('p', { class: 'kicker', text: 'PayAviator Gauge' }), gp.title, ...gp.head, gp.pager);
 
   const colR = h('div', { class: 'col-r' },
     h('section', { class: 'card cushion' }, h('div', { class: 'row-h' }, ib('shield'), h('div', null, h('h2', { text: 'Cushion' }), h('p', { class: 'muted', text: 'Money you protect. It is kept out of Safe to Spend.' }))),
@@ -91,6 +140,7 @@ function render(main) {
   main.replaceChildren(...banners,
     ...[empty ? h('div', { class: 'banner' }, icon('cloud'), h('p', null, h('b', { text: 'Nothing here yet. ' }), 'Add a bill or income, or sign in to the app so your data syncs here. ', h('a', { class: 'lnk', href: 'bills.html', text: 'Add a bill' }))) : null,
     h('div', { class: 'grid dash' }, hero, colR, cash, credit), spend, activity].filter(Boolean));
+  if (gp.restore) gp.restore();
 }
 
 bootPage({ key: 'index.html', title: 'Home', sub: 'Your important numbers at a glance.', render: (m, sh) => render(m, sh) }).then((sh) => { if (sh) { rerender = () => render(sh.main); loadAccounts(); loadTx(); } });
