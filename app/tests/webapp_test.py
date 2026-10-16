@@ -278,6 +278,22 @@ def run():
         pg.goto(B + 'bills.html'); pg.wait_for_selector('.bill')
         check('calendar: bills page unaffected after shared-form refactor', pg.locator('.bill:has-text("Test calendar bill")').count() == 0)
 
+        print('[plans: Founder / Aviator Elite]')
+        for q, key, name, title, msg, banks, cls in [('plan=comp', 'elite', 'Aviator Elite', 'Aviator Elite - Complimentary', 'Thank you for helping us test PayAviator.', 'Unlimited while testing', 'seal'), ('plan=comp&tier=founder', 'founder', 'Founder', 'Founder - Free forever', 'Every feature included.', 'No limit', 'pill')]:
+            pg.goto(B + 'accounts.html?' + q); pg.wait_for_selector(f'[data-plan-card={key}]')
+            check(f'{key}: plan card title + message + banks line', pg.inner_text('[data-plan-card] [data-plan]') == title and msg in pg.inner_text('[data-plan-card]') and pg.inner_text('[data-plan-card] [data-banks]') == banks)
+            check(f'{key}: badge next to the heading and on the plan card (style {"B seal" if cls=="seal" else "A pill"})', pg.locator(f'.ttl h1 [data-plan-badge={key}].{cls}').count() == 1 and pg.locator(f'[data-plan-card] [data-plan-badge={key}].{cls}').count() == 1 and name.lower() in pg.inner_text('.ttl h1').lower())
+            check(f'{key}: no bank limit, no Plus upsell, no upgrade link', pg.locator('.meter').count() == 0 and pg.locator('.card.plus').count() == 0)
+            pg.goto(B + 'settings.html?' + q); pg.wait_for_selector(f'[data-plan-card={key}]')
+            check(f'{key}: settings shows badge in heading and the plan card, no See plans / Manage subscription', pg.locator(f'.ttl h1 [data-plan-badge={key}]').count() == 1 and pg.locator('a:has-text("See plans")').count() == 0 and pg.locator('[data-act=portal]').count() == 0)
+        pg.goto(B + 'accounts.html'); pg.wait_for_selector('h2[data-plan]')
+        check('free plan: no badge, no special card, Free label', pg.locator('[data-plan-badge]').count() == 0 and pg.locator('[data-plan-card]').count() == 0 and pg.inner_text('h2[data-plan]') == 'Free')
+        pk = pg.evaluate("""async()=>{const m=await import('./js/plans.js');return [m.planKey({plan:'comp',source:'comp'}),m.planKey({plan:'comp',tier:'founder'}),m.planKey({plan:'founder'}),m.planKey({plan:'premium'}),m.planKey(null),m.planKey({plan:'free'})]}""")
+        check('planKey mapping: comp->elite, tier founder->founder, premium->plus, free', pk == ['elite', 'founder', 'founder', 'plus', 'free', 'free'], str(pk))
+        pr = open(os.path.join(ROOT, 'pricing.html')).read().lower()
+        check('public pricing page never mentions Founder or Aviator Elite', 'founder' not in pr and 'aviator elite' not in pr)
+        check('no email/uid hardcoded in plans.js', '@' not in open(os.path.join(ROOT, 'app', 'js', 'plans.js')).read())
+
         print('[security]')
         html = [open(os.path.join(ROOT, 'app', f'{n}.html')).read() for n in PAGES]
         check('every page has a CSP meta, no inline script/style/handlers', all('Content-Security-Policy' in x and not re.search(r'<script(?![^>]*\bsrc=)[^>]*>', x) and ' style=' not in x and not re.search(r'\son\w+=', x) for x in html))

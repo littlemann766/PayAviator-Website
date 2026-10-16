@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { acctKind, acctBal, acctIncluded, setAcctChoice, readCash, writeCash } from '../calc.js';
 import { toast } from '../ui.js';
 import { bar, emptyState } from '../views.js';
+import { planKey, planInfo, planCard, paintHeadingBadge } from '../plans.js';
 
 const S = { loading: true, err: null, accounts: [], items: [], errors: [], tx: [], billing: null };
 let rerender = () => {};
@@ -52,7 +53,9 @@ function cashCard() {
 function render(main) {
   const groups = group(), bl = S.billing;
   const paused = groups.filter((g) => g.item.paused || S.errors.some((e) => e.item_id === g.item.item_id && (e.code === 'ITEM_PAUSED' || e.paused))).length;
-  const planName = !bl ? 'Free' : bl.plan === 'premium' ? 'Plus' : bl.plan === 'comp' ? 'Complimentary' : 'Free';
+  const pk = planKey(bl), special = pk === 'founder' || pk === 'elite';
+  const planName = pk === 'plus' ? 'Plus' : special ? planInfo(bl).title : 'Free';
+  paintHeadingBadge(bl);
   const linked = bl ? num(bl.linkedBanks) : groups.length - paused;
   const limit = bl && bl.limit != null ? num(bl.limit) : (bl ? null : 1);
   const pausedN = bl ? num(bl.pausedBanks) : paused;
@@ -65,7 +68,7 @@ function render(main) {
   if (!S.loading && !S.err && S.tx.length) left.push(h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Recent bank activity' })), h('ul', { class: 'alist' }, S.tx.slice(0, 8).map((t) => h('li', null, h('div', { class: 'bn' }, h('b', { text: t.merchant_name || t.name || 'Transaction' }), h('small', { text: `${fmtShort(t.date)}${t.institution_name ? ' \u00b7 ' + t.institution_name : ''}` })), h('div', { class: 'amt' }, h('b', { class: num(t.amount) < 0 ? 'pos' : '', text: (num(t.amount) < 0 ? '+' : '') + money(Math.abs(num(t.amount))) }), t.pending ? h('span', { class: 'tag warn', text: 'Pending' }) : null))))));
 
   const pct = limit ? Math.min(100, linked / limit * 100) : 100;
-  const plan = h('section', { class: 'card plan' }, h('p', { class: 'kicker l', text: 'Your plan' }), h('h2', { 'data-plan': '', text: planName }),
+  const plan = special ? planCard(bl) : h('section', { class: 'card plan' }, h('p', { class: 'kicker l', text: 'Your plan' }), h('h2', { 'data-plan': '', text: planName }),
     limit ? h('div', { class: 'meter' }, bar(pct, 'of linked banks used', true), h('p', null, h('b', { text: `${linked} of ${limit}` }), ' linked bank used')) : h('p', { class: 'muted', text: `${linked} linked bank${linked === 1 ? '' : 's'}, no limit.` }),
     pausedN > 0 ? h('div', { class: 'banner warn', role: 'status', 'data-paused-banner': '' }, icon('pause'), h('p', null, h('b', { text: `${pausedN} bank${pausedN > 1 ? 's are' : ' is'} paused. ` }), 'They resume on their own when Plus is active again.')) : null,
     h('p', { class: 'muted', text: 'Available Now counts your checking accounts and cash on hand. Savings, money market, CDs, credit cards, loans and investments are not counted unless you include a savings account yourself. Use Include / Exclude to change which accounts count.' }),
@@ -73,6 +76,6 @@ function render(main) {
   const plus = h('section', { class: 'card plus' }, h('div', { class: 'row-h' }, h('span', { class: 'ib' }, icon('lock')), h('div', null, h('h2', { text: 'More banks with Plus' }), h('p', { class: 'muted', text: 'Link several banks and cards in one view.' }))), h('p', { class: 'soon', text: 'Plus is coming soon.' }));
 
   main.replaceChildren(h('div', { class: 'banner' }, icon('eye'), h('p', null, h('b', { text: 'Linked banks are read-only on the web. ' }), 'Connect or remove a bank in the Android app. Bills, income and budget are editable here.')),
-    h('div', { class: 'grid two' }, h('div', { class: 'col-r' }, left), h('div', { class: 'col-r' }, plan, plus)));
+    h('div', { class: 'grid two' }, h('div', { class: 'col-r' }, left), h('div', { class: 'col-r' }, special ? [plan] : [plan, plus])));
 }
 bootPage({ key: 'accounts.html', title: 'Connected Accounts', sub: 'Your linked banks and plan.', render: (m) => render(m) }).then((sh) => { if (sh) { rerender = () => render(sh.main); load(); } });

@@ -1,6 +1,6 @@
 # PayAviator web app (phase 1)
 
-Static HTML + one shared CSS (`app.css`) + vanilla ES modules. No framework, no build step, no CDN except the Firebase Auth SDK from `www.gstatic.com` (same version/approach as `assets/billing.js`). **Local branch `webapp-build`; not deployed.**
+Static HTML + one shared CSS (`app.css`) + vanilla ES modules. No framework, no build step, no CDN except the Firebase Auth SDK from `www.gstatic.com` (same version/approach as `assets/billing.js`). **Web app version 4.2.1, matching Android 4.2.1 (versionCode 420100). Local branch `plans-founder-elite`; not deployed.**
 
 Routes (files): `/app/signin`, `/app/` (`index.html`, dashboard), `/app/calendar`, `/app/bills`, `/app/income`, `/app/budget`, `/app/accounts`, `/app/settings`. Links are relative (`bills.html`), so it works from any static host (GitHub Pages serves extensionless URLs too).
 
@@ -71,3 +71,6 @@ Month grid modelled on the Android app's Calendar tab (`index.html` `renderCalen
 - Edits go through the same sync path (`api.bills.save/remove`, `api.income.save/remove`), so they appear on the phone and offline queueing is unchanged.
 - **Not ported from the app:** reminders and work hours (not synced kinds), long-press shortcut, week tabs, multi-month range, calendar filter toggles, and moving a single occurrence to another day.
 - Tests: `[calendar]` section in `tests/webapp_test.py`. Screenshots: `python3 app/tests/shots_calendar.py [outdir]`.
+
+## Plans (4.2.1)
+Founder (amber outlined pill, crown) and Aviator Elite (cyan seal, star) come from `GET /api/billing/status` via `js/plans.js`: plan/source `comp` = Aviator Elite; `tier: 'founder'` (or plan/source `founder`) = Founder. Badge sits beside the page heading and on a Your plan card (Connected Accounts and Settings). Neither plan is on the public pricing page. Demo preview: `?plan=comp` and `?plan=comp&tier=founder` on localhost. Screenshots: `python3 app/tests/shots_plans.py [outdir]`.

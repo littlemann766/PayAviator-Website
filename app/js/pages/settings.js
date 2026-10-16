@@ -2,6 +2,7 @@ import { h, icon, money } from '../util.js';
 import { bootPage, openSheet, confirmDialog, toast, signOutNow } from '../ui.js';
 import { api } from '../api.js';
 import { auth, authMessage } from '../auth.js';
+import { planKey, planInfo, planCard, paintHeadingBadge } from '../plans.js';
 
 let rerender = () => {};
 let billing = null;
@@ -21,6 +22,7 @@ function openCushion() {
 }
 
 function planSub() {
+  if (planInfo(billing)) return planInfo(billing).msg;
   if (!billing) return 'Your first bank, with all its accounts, is free.';
   if (billing.plan === 'premium') {
     const e = billing.periodEnd || billing.expiresAt, d = e ? new Date(typeof e === 'number' && e < 1e12 ? e * 1000 : e) : null;
@@ -54,10 +56,13 @@ function render(main) {
   const cushionTxt = c.mode === 'percent' ? `${c.percent || 0}% of available money` : money(c.dollar || 0);
   const lastSync = st.lastSync ? new Date(st.lastSync).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not yet';
   const syncTag = st.status === 'ok' ? h('span', { class: 'tag ok', text: 'Up to date' }) : st.status === 'busy' ? h('span', { class: 'tag warn', text: 'Syncing' }) : h('span', { class: 'tag warn', text: st.status === 'off' ? 'Offline' : 'Problem' });
-  const planName = !billing ? 'Free plan' : billing.plan === 'premium' ? 'Plus' : billing.plan === 'comp' ? 'Complimentary plan' : 'Free plan';
+  const pk = planKey(billing), special = pk === 'founder' || pk === 'elite';
+  const planName = pk === 'plus' ? 'Plus' : special ? planInfo(billing).title : 'Free plan';
+  paintHeadingBadge(billing);
   const method = (u.providers || []).includes('google.com') ? 'Google' : (u.providers || []).includes('password') ? 'Email and password' : auth.demo ? 'Demo' : 'Google or email';
 
   main.replaceChildren(h('div', { class: 'grid two' },
+    special ? planCard(billing) : null,
     h('section', { class: 'card' }, h('ul', { class: 'slist' }, h('li', null, h('span', { class: 'ib' }, icon('bank')), h('div', { class: 'bn' }, h('b', { text: 'Connected Accounts' }), h('small', { text: 'Linked banks, cash and what counts in Available Now' })), h('a', { class: 'lnk', href: 'accounts.html', 'data-connected-accounts': '', text: 'Open' })))),
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Profile' })), h('ul', { class: 'slist' },
       li('user', 'Name', u.displayName || (u.email || '').split('@')[0] || 'You'),
@@ -72,8 +77,8 @@ function render(main) {
       li('logout', 'Sign out', 'On this browser. Clears data held here.', h('button', { class: 'linkbtn lnk', type: 'button', 'data-act': 'signout', text: 'Sign out', onclick: signOutNow })),
       li('phone', 'App lock', 'Set up on your Android phone'))),
     h('section', { class: 'card', id: 'plan' }, h('div', { class: 'row-h' }, h('h2', { text: 'Plan & billing' })), h('ul', { class: 'slist' },
-      li('card', planName, planSub(), billing && billing.plan === 'premium' ? null : h('a', { class: 'lnk', href: '../pricing.html', text: 'See plans' })),
-      li('doc', 'Manage subscription', 'Update your card, see receipts or cancel in Stripe', h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'portal', onclick: openPortal }, icon('card'), h('span', { text: 'Manage' })))),
+      li('card', planName, planSub(), (pk === 'plus' || special) ? null : h('a', { class: 'lnk', href: '../pricing.html', text: 'See plans' })),
+      special ? null : li('doc', 'Manage subscription', 'Update your card, see receipts or cancel in Stripe', h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'portal', onclick: openPortal }, icon('card'), h('span', { text: 'Manage' })))),
       h('p', { class: 's-note', text: 'Subscribed in the Android app? Manage it in Google Play under Payments & subscriptions.' })),
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Help & legal' })), h('ul', { class: 'slist' },
       li('mail', 'Support', 'support@payaviator.app', h('a', { class: 'lnk', href: 'mailto:support@payaviator.app', text: 'Email us' })),

@@ -109,6 +109,7 @@ function stubTransport(uid) {
       const p = path.split('?')[0], qs = new URLSearchParams(location.search);
       if (p === '/api/plaid/accounts') return demoAccounts(qs);
       if (p === '/api/plaid/transactions') return demoTransactions(qs);
+      if (p === '/api/billing/status' && (qs.get('plan') === 'comp' || qs.get('tier') === 'founder')) return { plan: 'comp', source: 'comp', tier: qs.get('tier') || undefined, linkedBanks: 2, limit: null, expiresAt: null, productId: null, state: null, cancelAtPeriodEnd: false, periodEnd: null, grandfathered: false, pausedBanks: 0 };
       if (p === '/api/billing/status') return { plan: 'free', source: null, linkedBanks: qs.get('bank') === '0' ? 0 : 1, limit: 1, expiresAt: null, productId: null, state: null, cancelAtPeriodEnd: false, periodEnd: null, grandfathered: qs.get('paused') === '1', pausedBanks: qs.get('paused') === '1' ? 1 : 0 };
       throw apiErr('Not found', 'HTTP_404', 404);
     },
