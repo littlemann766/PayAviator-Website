@@ -466,3 +466,22 @@ details.more-d[open]>summary{margin-bottom:8px}
 @media(max-width:860px){.navlinks a.nav-login{text-align:center;padding:12px 14px}.navlinks .btn.nav-signup{margin:6px 0 0}}
 .navlinks a{white-space:nowrap}
 @media(min-width:861px){.navlinks{gap:2px}.navlinks a{padding:9px 9px;font-size:14.5px}.navlinks a.join-hl{padding:8px 13px}.navlinks a.nav-login{padding:7px 14px}.navlinks .btn{margin-left:4px;padding:0 13px}}
+
+/* header: one breakpoint (1180px) for the menu; fluid, no-wrap desktop bar above it */
+@media (max-width:1180px){
+  .js .menu-btn{display:block}
+  .js .navlinks{position:absolute;left:0;right:0;top:100%;flex-direction:column;align-items:stretch;gap:2px;padding:10px 18px 18px;background:#f3f9fe;border-bottom:1px solid var(--line);box-shadow:0 18px 30px rgba(13,42,85,.12);transform:translateY(-8px);opacity:0;visibility:hidden;transition:transform .2s,opacity .2s,visibility 0s .2s;max-height:calc(100vh - 70px);max-height:calc(100dvh - 70px);overflow-y:auto}
+  .js .navlinks.open{transform:none;opacity:1;visibility:visible;transition:transform .2s,opacity .2s}
+  .navlinks a{padding:12px 14px;font-size:16.5px;min-height:44px;display:flex;align-items:center}
+  .navlinks a.join-hl,.navlinks a.nav-login{justify-content:center;text-align:center;padding:12px 16px;font-size:16.5px}
+  .navlinks .btn,.navlinks .btn.nav-signup{margin:6px 0 0;justify-content:center;min-height:46px}
+  html:not(.js) .nav{flex-wrap:wrap}html:not(.js) .navlinks{flex-wrap:wrap;margin-left:0}
+}
+@media (min-width:1181px){
+  .navlinks{gap:clamp(2px,.3vw,6px)}
+  .navlinks a{font-size:clamp(14px,1.05vw,16px);padding:9px clamp(8px,.8vw,13px)}
+  .navlinks a.join-hl{padding:8px clamp(12px,1vw,18px)}
+  .navlinks a.nav-login{padding:7px clamp(12px,1vw,18px)}
+  .navlinks .btn{margin-left:clamp(4px,.4vw,8px);padding:0 clamp(12px,1vw,18px);white-space:nowrap}
+}
+.nav .brand{flex:none}
