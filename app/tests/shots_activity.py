@@ -13,10 +13,12 @@ with sync_playwright() as p:
     for w, h in ((390, 844), (1280, 800)):
         c = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2 if w < 500 else 1)
         pg = c.new_page(); pg.goto(B + 'signin.html?demo=1'); pg.wait_for_url('**/index.html')
-        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act]')
-        for r in ('week', 'month', 'year'):
-            pg.click(f'.activity [data-act-range={r}]'); pg.wait_for_timeout(200)
-            pg.locator('.activity.card').scroll_into_view_if_needed(); pg.locator('.activity.card').screenshot(path=f'{OUT}/home_activity_{r}_{w}.png')
+        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act-toggle]')
+        pg.locator('.activity.card').scroll_into_view_if_needed(); pg.screenshot(path=f'{OUT}/home_activity_{w}_closed.png')
+        pg.locator('.activity.card').screenshot(path=f'{OUT}/home_activity_card_{w}_closed.png')
+        pg.click('[data-act-toggle]'); pg.wait_for_selector('[data-act]'); pg.wait_for_timeout(300)
+        pg.locator('.activity.card').scroll_into_view_if_needed(); pg.screenshot(path=f'{OUT}/home_activity_{w}_open.png')
+        pg.locator('.activity.card').screenshot(path=f'{OUT}/home_activity_card_{w}_open.png')
         pg.goto(B + 'activity.html?bank=1&range=year'); pg.wait_for_selector('[data-act]'); pg.wait_for_timeout(300)
         pg.screenshot(path=f'{OUT}/view_all_{w}.png', full_page=True)
     b.close()

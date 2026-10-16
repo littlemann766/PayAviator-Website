@@ -10,6 +10,7 @@ import { colorDot, dueTag, emptyState } from '../views.js';
 let acct = { loaded: false, accounts: [], items: [], errors: [], failed: false };
 let tx = { loaded: false, list: [], failed: false };
 let spendRange = 'week', spendMode = 'category';
+let actOpen = (() => { try { return sessionStorage.getItem('pa_act_open') === '1'; } catch (e) { return false; } })();
 let rerender = () => {};
 
 async function loadTx() {
@@ -74,10 +75,13 @@ function render(main) {
     gaugeSVG(s.creditUsed, { main: false, reverse: true, label: 'Credit used' }));
 
   const act = activityRows(tx.list, data.spending, null, acct.accounts, spendRange);
-  const activity = h('section', { class: 'card activity', 'aria-labelledby': 'g-act' },
-    h('div', { class: 'row-h' }, h('h2', { id: 'g-act', text: 'Recent activity' }), h('a', { class: 'more', href: 'activity.html?range=' + spendRange }, 'View all ', icon('chev'))),
-    rangeTabs(spendRange, (r) => { spendRange = r; render(main); }),
-    actList(act, spendRange));
+  const bodyId = 'g-act-body';
+  const setOpen = (v) => { actOpen = v; try { sessionStorage.setItem('pa_act_open', v ? '1' : '0'); } catch (e) { /* private mode */ } render(main); };
+  const activity = h('section', { class: 'card activity act-panel' + (actOpen ? ' open' : ''), 'aria-labelledby': 'g-act' },
+    h('div', { class: 'row-h' },
+      h('h2', { id: 'g-act', class: 'act-h' }, h('button', { type: 'button', class: 'act-toggle', 'data-act-toggle': '', 'aria-expanded': String(actOpen), 'aria-controls': bodyId, onclick: () => setOpen(!actOpen) }, h('span', { text: 'Recent activity' }), h('span', { class: 'act-count', 'data-act-count': '', text: String(act.length) + (act.length === 1 ? ' item' : ' items') }), icon('chev'))),
+      h('a', { class: 'more', href: 'activity.html?range=' + spendRange }, 'View all ', icon('chev'))),
+    h('div', { id: bodyId, class: 'act-body', hidden: actOpen ? null : '' }, rangeTabs(spendRange, (r) => { spendRange = r; render(main); }), actList(act, spendRange)));
 
   const spend = spendChart({ data, bank: tx.list, range: spendRange, mode: spendMode, onRange: (r) => { spendRange = r; render(main); }, onMode: (m) => { spendMode = m; render(main); } });
   const banners = [];

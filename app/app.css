@@ -373,3 +373,14 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .act-scroll{max-height:22rem;overflow-y:auto;overscroll-behavior:contain;padding-right:.25rem}
 .act-scroll:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:12px}
 .activity.full{margin-top:.5rem}.more.back{display:inline-flex;align-items:center;gap:.25rem}.ic.flip{transform:scaleX(-1)}
+
+/* Recent activity: collapsible panel on Home (closed by default) */
+.act-h{margin:0;font:inherit}
+.act-toggle{display:inline-flex;align-items:center;gap:.5rem;background:none;border:0;padding:.25rem 0;color:inherit;font:inherit;font-weight:700;cursor:pointer;min-height:44px;text-align:left}
+.act-toggle:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:8px}
+.act-toggle .act-count{font-weight:500;font-size:.85rem;opacity:.7}
+.act-toggle .ic{transition:transform .2s;transform:rotate(90deg)}
+.act-toggle[aria-expanded=true] .ic{transform:rotate(-90deg)}
+.act-body[hidden]{display:none}
+.act-panel .act-scroll{max-height:20rem}
+@media (prefers-reduced-motion:reduce){.act-toggle .ic{transition:none}}

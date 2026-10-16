@@ -183,12 +183,14 @@ def run():
         pg.goto(B + 'index.html')
 
         print('[recent activity]')
+        pg.wait_for_selector('[data-act-toggle]')
+        if pg.locator('[data-act-toggle]').get_attribute('aria-expanded') != 'true': pg.click('[data-act-toggle]')
         pg.wait_for_selector('[data-activity]')
         pg.click('.activity [data-act-range=year]')  # Week can miss early-month demo rows depending on the weekday
         check('Home shows Recent activity with synced spending only (no bank): sorted, spending red/neg, refund green/pos',
               pg.locator('[data-act]').count() >= 3 and pg.locator('[data-act] .neg').count() >= 3 and pg.locator('[data-act] .pos').count() >= 1 and pg.locator('[data-act] .neg').first.inner_text().startswith('\u2212$'))
         check('Recent activity View all opens the activity list page (not Budget) for the selected range', pg.locator('.activity a.more').get_attribute('href') == 'activity.html?range=year')
-        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
+        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act-toggle]'); (pg.click('[data-act-toggle]') if pg.locator('[data-act-toggle]').get_attribute('aria-expanded') != 'true' else None); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
         check('with a bank, bank transactions merge in (Pending tag, income green)', pg.locator('[data-act]:has-text("Grocery Mart"):has-text("Pending")').count() == 1 and pg.locator('[data-act]:has-text("Acme Co.") .pos').count() == 1)
         pg.locator('[data-act]:has-text("Grocery Mart")').click(); pg.wait_for_selector('[data-info-sheet]')
         dt = pg.locator('[data-info-sheet]').inner_text()
@@ -196,7 +198,17 @@ def run():
         pg.keyboard.press('Escape'); check('Escape closes the detail panel', pg.locator('[data-info-sheet]').count() == 0)
 
         print('[activity by range]')
-        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
+        pg.evaluate("sessionStorage.removeItem('pa_act_open')")  # fresh session = closed by default
+        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act-toggle]')
+        tg = pg.locator('[data-act-toggle]')
+        check('Recent activity is a collapsible panel: closed by default, button with aria-expanded=false, count shown, list hidden', tg.get_attribute('aria-expanded') == 'false' and tg.evaluate("e=>e.tagName") == 'BUTTON' and 'item' in pg.inner_text('[data-act-count]') and pg.locator('#g-act-body').is_hidden() and pg.locator('.activity a.more').get_attribute('href').startswith('activity.html'))
+        tg.click()
+        check('opening shows Week/Month/Year tabs and the list with capped height + own scroll', tg.get_attribute('aria-expanded') == 'true' and pg.locator('[data-act-range]').count() == 3 and pg.locator('#g-act-body').is_visible() and pg.evaluate("getComputedStyle(document.querySelector('.act-scroll')).maxHeight") != 'none')
+        pg.goto(B + 'index.html?bank=1'); pg.wait_for_selector('[data-act-toggle]')
+        check('open state is remembered for the session (stays open after reload of Home)', pg.locator('[data-act-toggle]').get_attribute('aria-expanded') == 'true')
+        pg.locator('[data-act-toggle]').press('Enter'); pg.wait_for_timeout(100)
+        check('keyboard (Enter) closes it and the state is remembered', pg.locator('[data-act-toggle]').get_attribute('aria-expanded') == 'false' and pg.evaluate("sessionStorage.getItem('pa_act_open')") == '0')
+        pg.locator('[data-act-toggle]').press('Enter'); pg.wait_for_selector('[data-act]:has-text("Grocery Mart")')
         cnt = lambda: pg.locator('.activity.card:not(.full) [data-act]').count()
         wk = cnt()
         check('Recent activity range tabs: Week selected by default and old rows (Target 9d) are not in Week', pg.locator('.activity [data-act-range=week].active').count() == 1 and wk >= 3 and pg.locator('[data-act]:has-text("Home Depot")').count() == 0)
