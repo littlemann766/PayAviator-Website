@@ -525,12 +525,25 @@
      Only values the spreadsheet actually provides are applied; everything else (id, colour, paid history, notes when the cell is blank...) is untouched. */
   var FQ_LABEL = { never: 'Never', weekly: 'Weekly', biweekly: 'Every 2 weeks', monthly: 'Monthly' };
   function recurLabel(recurring, recurrence) { return recurring ? (FQ_LABEL[recurrence] || recurrence || 'Monthly') : 'Never'; }
+  /* A repeating bill's due date is its first date: moving it forward to this month would hide earlier paid months.
+     So a date in the same schedule (same day of month / whole weeks apart) counts as unchanged; a new day of month keeps the existing month. */
+  function dueForOverwrite(it, rec) {
+    var nd = it.due, old = rec.due; if (!/^\d{4}-\d{2}-\d{2}$/.test(old || '')) return nd;
+    var willRecur = it.has && it.has.freq && it.fq ? (it.fq !== 'never' && it.fq !== 'one-time') : !!rec.recurring, rr = it.has && it.has.freq && it.fq && willRecur ? it.fq : rec.recurrence;
+    if (!rec.recurring || !willRecur) return nd;
+    if (rr === 'weekly' || rr === 'biweekly') { var days = Math.round((Date.UTC(+nd.slice(0, 4), +nd.slice(5, 7) - 1, +nd.slice(8, 10)) - Date.UTC(+old.slice(0, 4), +old.slice(5, 7) - 1, +old.slice(8, 10))) / 864e5); return days % (rr === 'weekly' ? 7 : 14) === 0 ? old : nd; }
+    if (nd.slice(8, 10) === old.slice(8, 10)) return old;
+    var last = new Date(+old.slice(0, 4), +old.slice(5, 7), 0).getDate(), day = Math.min(+nd.slice(8, 10), last);
+    return old.slice(0, 8) + (day < 10 ? '0' : '') + day;
+  }
   function overwriteChanges(it, rec) {
     var patch = {}, changes = [], has = it.has || {};
     function chg(key, label, from, to, val) { patch[key] = val === undefined ? to : val; changes.push({ key: key, label: label, from: from, to: to }); }
     var nm = String(it.name || '').slice(0, 80); if (nm && nm !== rec.name) chg('name', 'Name', rec.name, nm);
     if (it.amount > 0 && Math.round(it.amount * 100) !== Math.round((Number(rec.amount) || 0) * 100)) chg('amount', 'Amount', fmtMoney(rec.amount), fmtMoney(it.amount), it.amount);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(it.due || '') && it.due !== rec.due) chg('due', 'Due', rec.due || 'none', it.due);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(it.due || '') && it.due !== rec.due) {
+      var nd = dueForOverwrite(it, rec); if (nd && nd !== rec.due) chg('due', 'Due', rec.due || 'none', nd);
+    }
     if (has.freq && it.fq) {
       var recur = it.fq !== 'never' && it.fq !== 'one-time', rr = recur ? it.fq : (rec.recurrence || 'weekly');
       if (recur !== !!rec.recurring || (recur && rr !== rec.recurrence)) { chg('recurring', 'Repeats', recurLabel(rec.recurring, rec.recurrence), recurLabel(recur, rr), recur); patch.recurrence = rr; }
