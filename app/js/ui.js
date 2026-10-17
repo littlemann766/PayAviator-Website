@@ -220,6 +220,7 @@ export function hideBoot() {
   const b = document.getElementById('boot');
   if (!b || b.dataset.done) return;
   b.dataset.done = '1';
+  try { sessionStorage.setItem('pa_boot_seen', '1'); } catch (e) { /* ignore */ }
   const wait = Math.max(0, 700 - (window.performance && performance.now ? performance.now() : 700));
   setTimeout(() => { b.classList.add('out'); setTimeout(() => b.remove(), 360); }, wait);
 }

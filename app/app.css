@@ -448,6 +448,7 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 
 /* PayAviator load-up: same navy-to-sky and drifting clouds as the Android app splash */
 .boot{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#051328 0%,#0b3470 30%,#0c79bb 68%,#6ab8e6 100%);color:#fff;opacity:1;transition:opacity .28s ease;padding:1.5rem;box-sizing:border-box}
+.boot-seen .boot{display:none}
 .boot.out{opacity:0;pointer-events:none}
 .boot-sky{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:radial-gradient(circle at 78% 18%,rgba(140,205,255,.16) 0,rgba(140,205,255,0) 55vmax)}
 .boot-veil{position:absolute;left:50%;top:50%;width:min(92vmin,640px);aspect-ratio:1;margin:calc(min(92vmin,640px)/-2) 0 0 calc(min(92vmin,640px)/-2);border-radius:50%;background:radial-gradient(circle,rgba(236,247,255,.8) 0,rgba(236,247,255,.6) 22%,rgba(236,247,255,.3) 46%,rgba(236,247,255,.08) 70%,rgba(236,247,255,0) 100%);pointer-events:none;animation:bootclear 2.4s cubic-bezier(.3,.6,.3,1) .1s forwards}
