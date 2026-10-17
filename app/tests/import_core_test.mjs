@@ -116,6 +116,33 @@ console.log('[bad and huge files]');
     ok(`no crash: ${n}`, !crashed);
   }
 }
+console.log('[overwrite / keep mine]');
+{
+  const EX = { bills: [{ id: 'b-elec', name: 'Electric', amount: 118, due: '2026-10-03', recurring: true, recurrence: 'monthly', category: 'Utilities', notes: 'keep me', autopay: false }, { id: 'b-rent', name: 'Rent', amount: 1450, due: '2026-10-01', recurring: true, recurrence: 'monthly', category: 'Housing', notes: '', autopay: true }], income: EXIST.income };
+  const r = P.readFile(buf('duplicates.xlsx'), 'duplicates.xlsx'), rows = r.sheets[0].rows, an = P.analyze(rows, NOW);
+  const items = P.buildItems(rows, an, { now: NOW, ...EX }).items;
+  const e = items[0];
+  ok('matched bill carries the existing bill id', e.dup && e.dup.id === 'b-elec', JSON.stringify(e.dup));
+  ok('matched bill can be overwritten and defaults to Keep mine, unticked', e.canOverwrite === true && e.dupAction === 'keep' && e.checked === false);
+  ok('new row and in-file repeat cannot be overwritten', items[1].canOverwrite === false && items[2].canOverwrite === false && items[2].dup.inFile);
+  const inc = by(P.buildItems(rows, an, { now: NOW, ...EX }).items, 'Paycheck');
+  ok('income matches are not overwritable (bills only)', !inc || inc.canOverwrite === false);
+  const o = P.overwriteChanges(e, EX.bills[0]);
+  ok('changes list existing vs new (Amount 118 -> spreadsheet value)', o.changes.some((c) => c.key === 'amount' && c.from === '$118.00') && o.patch.amount === e.amount, JSON.stringify(o));
+  ok('patch only has fields the file provides (no id/colour/notes/occ)', !('id' in o.patch) && !('color' in o.patch) && !('notes' in o.patch) && !('occ' in o.patch), JSON.stringify(o.patch));
+  const same = P.overwriteChanges({ name: 'Electric', amount: 118, due: '2026-10-03', has: {} }, EX.bills[0]);
+  ok('identical values give no changes', same.changes.length === 0 && Object.keys(same.patch).length === 0);
+  const full = P.overwriteChanges({ name: 'Electric', amount: 120, due: '2026-10-05', fq: 'weekly', category: 'Housing', notes: 'new note', autopay: true, paid: true, has: { freq: true, category: true, notes: true, autopay: true, paid: true } }, EX.bills[0]);
+  ok('freq/category/notes/autopay/paid applied when the file has those columns', full.patch.recurrence === 'weekly' && full.patch.recurring === true && full.patch.category === 'Housing' && full.patch.notes === 'new note' && full.patch.autopay === true && full.markPaid === true, JSON.stringify(full));
+  const blank = P.overwriteChanges({ name: 'Electric', amount: 120, due: '2026-10-03', notes: '', category: '', has: { notes: true, category: true } }, EX.bills[0]);
+  ok('blank notes/category cells never erase what the user has', !('notes' in blank.patch) && !('category' in blank.patch));
+  const never = P.overwriteChanges({ name: 'Rent', amount: 1450, due: '2026-10-01', fq: 'never', has: { freq: true } }, EX.bills[1]);
+  ok('"Never" turns recurring off', never.patch.recurring === false);
+  e.dupAction = 'overwrite'; P.refreshItems(items, EX);
+  ok('Overwrite choice survives a refresh while it still matches', e.dupAction === 'overwrite');
+  e.name = 'Totally Unrelated Zebra'; P.refreshItems(items, EX);
+  ok('no longer matching resets to Keep mine / not overwritable', e.canOverwrite === false && e.dupAction === 'keep');
+}
 console.log('[helpers]');
 {
   const a = P.parseAmount;

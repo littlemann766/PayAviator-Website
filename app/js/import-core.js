@@ -457,12 +457,12 @@
     for (var i = 0; i < existing.length; i++) {
       var e = existing[i], en = normName(e.name); if (!en) continue;
       var ea = Number(e.amount) || 0, edate = e.due || e.date || '';
-      if (en === n) return { name: e.name, amount: ea, due: edate };
+      if (en === n) return { id: e.id, name: e.name, amount: ea, due: edate };
       var short = n.length < en.length ? n : en, long = n.length < en.length ? en : n;
       var sameDay = edate && item.due && edate.slice(8, 10) === item.due.slice(8, 10);
       if (near(ea, item.amount) || sameDay) {
-        if (short.length >= 4 && long.indexOf(short) >= 0) return { name: e.name, amount: ea, due: edate };
-        if (short.length >= 5 && lev(n, en) <= 1) return { name: e.name, amount: ea, due: edate };
+        if (short.length >= 4 && long.indexOf(short) >= 0) return { id: e.id, name: e.name, amount: ea, due: edate };
+        if (short.length >= 5 && lev(n, en) <= 1) return { id: e.id, name: e.name, amount: ea, due: edate };
       }
     }
     return null;
@@ -483,7 +483,7 @@
       var r = rows[i], any = r.some(function (x) { return x !== '' && x != null; });
       if (!any) { skippedEmpty++; continue; }
       var name = cleanName(cell(r, 'name')), amt = parseAmount(cell(r, 'amount')), dt = parseDate(cell(r, 'due'), now);
-      var it = { row: i + 1, name: name, amount: isFinite(amt) ? amt : '', due: '', fq: null, category: '', paid: false, autopay: false, notes: '', dest: 'bills', checked: false, note: '', dup: null, errors: [], rawDue: str(cell(r, 'due')), rawAmount: str(cell(r, 'amount')) };
+      var it = { row: i + 1, name: name, amount: isFinite(amt) ? amt : '', due: '', fq: null, category: '', paid: false, autopay: false, notes: '', dest: 'bills', checked: false, note: '', dup: null, errors: [], rawDue: str(cell(r, 'due')), rawAmount: str(cell(r, 'amount')), has: { freq: mp.freq != null, category: mp.category != null, notes: mp.notes != null, autopay: mp.autopay != null, paid: mp.paid != null }, dupAction: 'keep' };
       var fq = parseFreq(cell(r, 'freq')); it.fq = fq ? fq.v : null; if (fq && fq.note) it.note = fq.note;
       if (dt.iso) it.due = dt.iso; else if (dt.day) { it.due = dayToISO(dt.day, now); if (!fq) it.fq = 'monthly'; }
       if (mp.freq == null || !fq) { if (!it.fq) it.fq = 'monthly'; }
@@ -512,16 +512,38 @@
   function refreshItems(items, ex) {
     var seen = {};
     items.forEach(function (it) {
-      it.errors = it.dest === 'skip' ? [] : checkItem(it); it.dup = null; it.dupWhy = '';
+      it.errors = it.dest === 'skip' ? [] : checkItem(it); it.dup = null; it.dupWhy = ''; it.canOverwrite = false; if (it.dupAction !== 'overwrite') it.dupAction = 'keep';
       if (it.dest === 'skip' || !it.name) return;
       var d = findDuplicate(it, it.dest === 'income' ? ex.income : ex.bills);
-      if (d) { it.dup = d; it.dupWhy = 'Looks like \u201c' + d.name + '\u201d (' + fmtMoney(d.amount) + ') already in ' + (it.dest === 'income' ? 'Income' : 'Bills') + '.'; return; }
+      if (d) { it.dup = d; it.canOverwrite = it.dest === 'bills' && d.id != null; it.dupWhy = 'Looks like \u201c' + d.name + '\u201d (' + fmtMoney(d.amount) + ') already in ' + (it.dest === 'income' ? 'Income' : 'Bills') + '.'; return; }
       var key = it.dest + '|' + normName(it.name) + '|' + it.amount;
       if (seen[key]) { it.dup = { name: it.name, amount: it.amount, inFile: true }; it.dupWhy = 'Appears more than once in this file.'; } else seen[key] = 1;
     });
+    items.forEach(function (it) { if (!it.canOverwrite) it.dupAction = 'keep'; });
+  }
+  /* Overwrite support. rec = the existing bill record. Returns { patch, changes:[{key,label,from,to}], markPaid }.
+     Only values the spreadsheet actually provides are applied; everything else (id, colour, paid history, notes when the cell is blank...) is untouched. */
+  var FQ_LABEL = { never: 'Never', weekly: 'Weekly', biweekly: 'Every 2 weeks', monthly: 'Monthly' };
+  function recurLabel(recurring, recurrence) { return recurring ? (FQ_LABEL[recurrence] || recurrence || 'Monthly') : 'Never'; }
+  function overwriteChanges(it, rec) {
+    var patch = {}, changes = [], has = it.has || {};
+    function chg(key, label, from, to, val) { patch[key] = val === undefined ? to : val; changes.push({ key: key, label: label, from: from, to: to }); }
+    var nm = String(it.name || '').slice(0, 80); if (nm && nm !== rec.name) chg('name', 'Name', rec.name, nm);
+    if (it.amount > 0 && Math.round(it.amount * 100) !== Math.round((Number(rec.amount) || 0) * 100)) chg('amount', 'Amount', fmtMoney(rec.amount), fmtMoney(it.amount), it.amount);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(it.due || '') && it.due !== rec.due) chg('due', 'Due', rec.due || 'none', it.due);
+    if (has.freq && it.fq) {
+      var recur = it.fq !== 'never' && it.fq !== 'one-time', rr = recur ? it.fq : (rec.recurrence || 'weekly');
+      if (recur !== !!rec.recurring || (recur && rr !== rec.recurrence)) { chg('recurring', 'Repeats', recurLabel(rec.recurring, rec.recurrence), recurLabel(recur, rr), recur); patch.recurrence = rr; }
+    }
+    if (has.category && it.category && it.category !== (rec.category || '')) chg('category', 'Category', rec.category || 'none', it.category);
+    if (has.notes && it.notes && it.notes !== (rec.notes || '')) chg('notes', 'Notes', rec.notes || 'none', it.notes);
+    if (has.autopay && !!it.autopay !== !!rec.autopay) chg('autopay', 'Autopay', rec.autopay ? 'On' : 'Off', it.autopay ? 'On' : 'Off', !!it.autopay);
+    var markPaid = !!(has.paid && it.paid);
+    if (markPaid) changes.push({ key: 'paid', label: 'Paid', from: '', to: 'Mark paid' });
+    return { patch: patch, changes: changes, markPaid: markPaid };
   }
   function fmtMoney(n) { n = Math.round(Number(n || 0) * 100) / 100; return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-  var api = { LIMITS: LIMITS, readFile: readFile, parseXlsx: parseXlsx, parseCsv: parseCsv, analyze: analyze, buildItems: buildItems, refreshItems: refreshItems, parseAmount: parseAmount, parseDate: parseDate, parseFreq: parseFreq, parsePaid: parsePaid, findDuplicate: findDuplicate, normName: normName, guessCategory: guessCategory, checkItem: checkItem, dayToISO: dayToISO, fmtMoney: fmtMoney, ROLES: ROLES, _inflate: inflate, _destOf: destOf };
+  var api = { LIMITS: LIMITS, readFile: readFile, parseXlsx: parseXlsx, parseCsv: parseCsv, analyze: analyze, buildItems: buildItems, refreshItems: refreshItems, parseAmount: parseAmount, parseDate: parseDate, parseFreq: parseFreq, parsePaid: parsePaid, findDuplicate: findDuplicate, overwriteChanges: overwriteChanges, normName: normName, guessCategory: guessCategory, checkItem: checkItem, dayToISO: dayToISO, fmtMoney: fmtMoney, ROLES: ROLES, _inflate: inflate, _destOf: destOf };
   root.PAImport = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

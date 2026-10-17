@@ -99,7 +99,10 @@ export function openImport() {
   const DESTS = [['bills', 'Bills'], ['income', 'Income'], ['skip', 'Skip']];
   const repeatOpts = (dest) => (dest === 'income' ? INCOME_FREQ : REPEATS);
   const fixFreq = (it) => { const ok = repeatOpts(it.dest).some((r) => r.v === it.fq); if (!ok) it.fq = it.dest === 'income' ? (it.fq === 'never' ? 'one-time' : 'monthly') : (it.fq === 'one-time' ? 'never' : 'monthly'); };
-  function counts() { const c = { bills: 0, income: 0, sel: 0 }; S.items.forEach((it) => { if (it.checked && it.dest !== 'skip') { c.sel++; c[it.dest]++; } }); return c; }
+  const isUpd = (it) => !!it.canOverwrite && it.dup && !it.dup.inFile && it.dest === 'bills';
+  const syncDups = () => S.items.forEach((i) => { if (isUpd(i)) { i.checked = i.dupAction === 'overwrite'; i._upd = true; } else { if (i._upd) { i.checked = false; i._upd = false; } if (i.dupAction === 'overwrite') i.dupAction = 'keep'; } });
+  const existingRec = (it) => it.dup && api.bills.list().find((b) => b.id === it.dup.id);
+  function counts() { const c = { bills: 0, income: 0, upd: 0, sel: 0 }; S.items.forEach((it) => { if (it.checked && it.dest !== 'skip') { c.sel++; if (isUpd(it)) c.upd++; else c[it.dest]++; } }); return c; }
   function stepPreview() {
     S.step = 'preview'; title.textContent = 'Choose what to bring in'; sub.textContent = S.file + (S.sheets.length > 1 ? ' \u00b7 ' + S.sheets[S.sheetIdx].name : '');
     const cats = categoryOptions();
@@ -110,17 +113,28 @@ export function openImport() {
     const more = btn('', 'ghost wide', () => { S.shown += CHUNK; paintRows(); }, { 'data-import-more': '' });
     const paintSummary = () => {
       const c = counts(), dups = S.items.filter((i) => i.dup).length, bad = S.items.filter((i) => i.checked && i.dest !== 'skip' && i.errors.length).length;
-      summary.textContent = `${S.items.length} row${S.items.length === 1 ? '' : 's'} read \u00b7 ${c.sel} selected` + (dups ? ` \u00b7 ${dups} look like ones you already have` : '') + (bad ? ` \u00b7 ${bad} need fixing` : '');
+      summary.textContent = `${S.items.length} row${S.items.length === 1 ? '' : 's'} read \u00b7 ${c.sel} selected` + (dups ? ` \u00b7 ${dups} look like ones you already have` : '') + (c.upd ? ` \u00b7 ${c.upd} will overwrite` : '') + (bad ? ` \u00b7 ${bad} need fixing` : '');
       const parts = []; if (c.bills) parts.push(`${c.bills} bill${c.bills === 1 ? '' : 's'}`); if (c.income) parts.push(`${c.income} income`);
-      addBtn.firstChild.textContent = c.sel ? `Add ${parts.join(' and ')}` : 'Nothing selected'; addBtn.disabled = !c.sel;
+      addBtn.firstChild.textContent = c.sel ? (parts.length ? `Add ${parts.join(' and ')}` : '') + (c.upd ? `${parts.length ? ', ' : ''}Overwrite ${c.upd}` : '') : 'Nothing selected'; addBtn.disabled = !c.sel;
     };
-    const refresh = () => { P.refreshItems(S.items, existing()); };
+    const refresh = () => { P.refreshItems(S.items, existing()); syncDups(); };
     function paintRow(it, node) {
       const errs = it.dest === 'skip' ? [] : it.errors;
-      node.classList.toggle('is-skip', it.dest === 'skip'); node.classList.toggle('is-dup', !!it.dup); node.classList.toggle('is-bad', !!errs.length && it.checked);
+      node.classList.toggle('is-skip', it.dest === 'skip'); node.classList.toggle('is-dup', !!it.dup); node.classList.remove('is-upd'); node.classList.toggle('is-bad', !!errs.length && it.checked);
       node.querySelector('[data-r=chk]').checked = it.checked;
       const flag = node.querySelector('[data-r=flag]'); flag.replaceChildren();
-      if (it.dup) flag.append(h('span', { class: 'tag warn', 'data-dup': '', text: it.dup.inFile ? 'Repeated in file' : 'Possible duplicate' }), h('small', { text: it.dupWhy }));
+      if (isUpd(it)) {
+        it.checked = it.dupAction === 'overwrite'; it._upd = true; node.querySelector('[data-r=chk]').checked = it.checked; node.classList.add('is-upd');
+        flag.append(h('span', { class: 'tag warn', 'data-dup': '', text: 'Already in Bills' }), h('small', { text: it.dupWhy }));
+        const act = h('div', { class: 'imp-act', role: 'group', 'aria-label': 'If this bill already exists' },
+          [['keep', 'Keep mine'], ['overwrite', 'Overwrite']].map(([v, l]) => h('button', { type: 'button', class: 'imp-seg' + (it.dupAction === v ? ' on' : ''), 'data-r': 'act-' + v, 'aria-pressed': String(it.dupAction === v), text: l,
+            onclick: () => { it.dupAction = v; it.checked = v === 'overwrite'; paintRow(it, node); paintSummary(); } })));
+        const rec = existingRec(it), ch = rec ? P.overwriteChanges(it, rec).changes : [];
+        const diff = h('div', { class: 'imp-diff', 'data-r': 'diff' }, h('b', { text: it.dupAction === 'overwrite' ? 'Overwrite will change:' : 'Your bill stays as is. Overwrite would change:' }),
+          ch.length ? ch.map((c) => h('div', { class: 'imp-drow' }, h('span', { text: c.label }), c.key === 'paid' ? h('span', { class: 'to', text: c.to }) : h('span', { class: 'from', text: c.from }), c.key === 'paid' ? null : h('span', { class: 'arr', text: '\u2192' }), c.key === 'paid' ? null : h('span', { class: 'to', text: c.to })))
+            : h('div', { class: 'imp-drow', text: 'Same values as yours. Nothing would change.' }));
+        flag.append(act, diff);
+      } else if (it.dup) flag.append(h('span', { class: 'tag warn', 'data-dup': '', text: it.dup.inFile ? 'Repeated in file' : 'Possible duplicate' }), h('small', { text: it.dupWhy }));
       if (errs.length) flag.append(h('span', { class: 'tag bad', 'data-needs': '', text: 'Needs: ' + errs.map((e) => ({ name: 'a name', amount: 'an amount', due: 'a due date' }[e])).join(', ') }));
       if (it.note) flag.append(h('small', { text: it.note }));
       ['name', 'amount', 'due'].forEach((k) => { const el = node.querySelector(`[data-r=${k}]`); const bad = errs.includes(k) && it.checked; el.classList.toggle('invalid', bad); if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid'); });
@@ -129,7 +143,7 @@ export function openImport() {
     function buildRow(it) {
       const node = h('div', { class: 'imp-row', 'data-row': String(it.row) });
       const chk = h('input', { type: 'checkbox', 'data-r': 'chk', 'aria-label': 'Import ' + (it.name || 'row ' + it.row), checked: it.checked });
-      chk.addEventListener('change', () => { it.checked = chk.checked; paintRow(it, node); paintSummary(); });
+      chk.addEventListener('change', () => { it.checked = chk.checked; if (isUpd(it)) it.dupAction = it.checked ? 'overwrite' : 'keep'; paintRow(it, node); paintSummary(); });
       const name = h('input', { type: 'text', 'data-r': 'name', maxlength: 80, value: it.name, placeholder: 'Name', 'aria-label': 'Name' });
       const amount = h('input', { type: 'text', inputmode: 'decimal', 'data-r': 'amount', value: it.amount === '' ? '' : String(it.amount), placeholder: '0.00', 'aria-label': 'Amount' });
       const due = h('input', { type: 'date', 'data-r': 'due', value: isISO(it.due) ? it.due : '', 'aria-label': 'Due date' });
@@ -153,13 +167,16 @@ export function openImport() {
       const left = S.items.length - S.shown; more.hidden = left <= 0; more.firstChild.textContent = `Show ${Math.min(CHUNK, left)} more of ${left} remaining rows`; paintSummary();
     }
     const tools = h('div', { class: 'imp-tools' },
-      btn('Select all', 'ghost sm', () => { S.items.forEach((i) => { if (i.dest !== 'skip') i.checked = true; }); paintRows(); }, { 'data-import-all': '' }),
-      btn('Select none', 'ghost sm', () => { S.items.forEach((i) => { i.checked = false; }); paintRows(); }, { 'data-import-none': '' }),
+      btn('Select all', 'ghost sm', () => { S.items.forEach((i) => { if (i.dest !== 'skip' && !isUpd(i)) i.checked = true; }); paintRows(); }, { 'data-import-all': '' }),
+      btn('Select none', 'ghost sm', () => { S.items.forEach((i) => { i.checked = false; i.dupAction = 'keep'; }); paintRows(); }, { 'data-import-none': '' }),
       btn('Change columns', 'ghost sm', () => stepMap(), { 'data-import-cols': '' }));
+    const nUpd = S.items.filter(isUpd).length;
+    if (nUpd) tools.append(btn(`Overwrite all duplicates (${nUpd})`, 'ghost sm', () => { S.items.forEach((i) => { if (isUpd(i)) { i.dupAction = 'overwrite'; i.checked = true; } }); paintRows(); }, { 'data-import-overwrite-all': '' }),
+      btn('Keep all mine', 'ghost sm', () => { S.items.forEach((i) => { if (isUpd(i)) { i.dupAction = 'keep'; i.checked = false; } }); paintRows(); }, { 'data-import-keep-all': '' }));
     const notes = [];
     if (S.overflow) notes.push(`Only the first ${P.LIMITS.maxRows.toLocaleString()} rows are shown. Split a bigger file to bring in the rest.`);
     if (S.truncated) notes.push('This file is very long, so we stopped reading it partway.');
-    const info = h('p', { class: 'imp-hint' }, 'Rows that look like bills you already have are not ticked. Tick them if you want them anyway.');
+    const info = h('p', { class: 'imp-hint' }, nUpd ? 'Bills you already have are kept as you entered them. Choose Overwrite on a row to update that bill with the spreadsheet values (nothing new is added, and its paid history stays).' : 'Rows that look like bills you already have are not ticked. Tick them if you want them anyway.');
     if (!S.items.length) { setBody(h('div', { class: 'empty-s' }, icon('search'), h('b', { text: 'No bill rows found' }), h('p', { text: 'We could not find any rows under the column titles. Check the file, or change which columns we read.' }))); setFoot(btn('Choose another file', 'ghost', () => stepPick()), btn('Change columns', 'ghost', () => stepMap()), h('span', { class: 'sp' })); return; }
     setBody(S.sheets.length > 1 ? sheetSelect(() => stepPreview()) : null, summary, notes.map((n) => h('p', { class: 'imp-hint warn', text: n })), tools, info, list, more, msg);
     paintRows();
@@ -174,18 +191,21 @@ export function openImport() {
       }
       msg.hidden = true; addBtn.disabled = true; addBtn.firstChild.textContent = 'Adding\u2026';
       let rejected = 0; const off = api.subscribe((ev) => { if (ev.type === 'rejected') rejected++; });
-      let nb = 0, ni = 0, failed = 0;
+      let nb = 0, ni = 0, nu = 0, failed = 0, same = 0; const kept = S.items.filter((i) => isUpd(i) && i.dupAction !== 'overwrite').length;
       try {
         for (const it of chosen) {
           try {
-            if (it.dest === 'bills') { api.bills.save(billFrom(it)); nb++; } else { api.income.save(incomeFrom(it)); ni++; }
+            if (isUpd(it)) {
+              const rec = existingRec(it);
+              if (!rec) { api.bills.save(billFrom(it)); nb++; } else { const r = updateFrom(it, rec); if (r) { api.bills.save(r); nu++; } else same++; }
+            } else if (it.dest === 'bills') { api.bills.save(billFrom(it)); nb++; } else { api.income.save(incomeFrom(it)); ni++; }
           } catch (e) { failed++; console.error(e); }
-          if ((nb + ni) % 50 === 0) await sleep(0);
+          if ((nb + ni + nu) % 50 === 0) await sleep(0);
         }
         for (let t = 0; t < 120; t++) { const st = api.status; if (!st.pending && st.status !== 'busy') break; await sleep(150); }
       } finally { off(); }
       const st = api.status, synced = !st.pending && st.status === 'ok';
-      stepResult({ nb, ni, failed: failed + rejected, skipped: S.items.length - chosen.length, synced, queued: st.pending > 0 });
+      stepResult({ nb, ni, nu, same, kept, failed: failed + rejected, skipped: S.items.length - chosen.length - kept, synced, queued: st.pending > 0 });
       toast(synced ? 'Imported. Synced to your phone.' : 'Imported. Will sync when you are back online.', 'ok');
     }
   }
@@ -194,15 +214,22 @@ export function openImport() {
     if (it.paid) occ[it.due] = { paid: it.amount };
     return { id: api.bills.newId(), name: it.name.slice(0, 80), amount: it.amount, due: it.due, recurring: recur, recurrence: recur ? it.fq : 'weekly', color: BILL_COLOR, category: it.category || 'Other', notes: it.notes || '', autopay: !!it.autopay, catFromMap: false, occ, paid: !recur && !!it.paid };
   }
+  /* overwrite = the normal edit path (api.bills.save with the SAME id): keeps id, paid history, colour and anything the file does not provide */
+  function updateFrom(it, rec) {
+    const o = P.overwriteChanges(it, rec); if (!o.changes.length) return null;
+    const bill = Object.assign({}, rec, o.patch), due = bill.due;
+    if (o.markPaid) { bill.occ = Object.assign({}, rec.occ || {}); bill.occ[due] = Object.assign({}, bill.occ[due] || {}, { paid: bill.amount }); if (!bill.recurring) bill.paid = true; }
+    return bill;
+  }
   function incomeFrom(it) { return { id: uuid(), name: it.name.slice(0, 80), amount: it.amount, date: it.due, frequency: it.fq === 'never' ? 'one-time' : it.fq }; }
 
   /* ---------------------------------------------------------------- step 4: result */
   function stepResult(r) {
     S.step = 'result'; title.textContent = 'Import finished'; sub.textContent = S.file;
     const parts = []; if (r.nb) parts.push(`${r.nb} bill${r.nb === 1 ? '' : 's'}`); if (r.ni) parts.push(`${r.ni} income item${r.ni === 1 ? '' : 's'}`);
-    setBody(h('div', { class: 'imp-done', 'data-import-result': '' }, h('span', { class: 'dlg-i' }, icon('check')), h('h3', { text: parts.length ? `Added ${parts.join(' and ')}` : 'Nothing was added' }),
+    setBody(h('div', { class: 'imp-done', 'data-import-result': '' }, h('span', { class: 'dlg-i' }, icon('check')), h('h3', { text: (parts.length || r.nu) ? [parts.length ? 'Added ' + parts.join(' and ') : '', r.nu ? (parts.length ? 'updated ' : 'Updated ') + `${r.nu} existing bill${r.nu === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and ') : 'Nothing was added' }),
       h('p', { text: r.queued ? 'Saved on this device. They will sync to your phone when you are back online.' : 'They are saved and synced, so they also show in the phone app.' }),
-      h('ul', { class: 'imp-stats' }, h('li', { text: `${r.skipped} row${r.skipped === 1 ? '' : 's'} left out` }), r.failed ? h('li', { class: 'neg', text: `${r.failed} could not be saved` }) : null)));
+      h('ul', { class: 'imp-stats' }, h('li', { text: `${r.skipped} row${r.skipped === 1 ? '' : 's'} left out` }), r.kept ? h('li', { text: `${r.kept} of your bills kept as you entered them` }) : null, r.same ? h('li', { text: `${r.same} already matched, so nothing changed` }) : null, r.failed ? h('li', { class: 'neg', text: `${r.failed} could not be saved` }) : null)));
     setFoot(btn('Import another file', 'ghost', () => stepPick()), h('span', { class: 'sp' }), btn('View bills', 'primary', () => { entry.close(); if (!/bills\.html$/.test(location.pathname)) location.href = 'bills.html'; }, { 'data-import-done': '' }));
   }
 

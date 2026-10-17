@@ -438,3 +438,10 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 @media(min-width:600px){.imp-fields{grid-template-columns:repeat(6,minmax(0,1fr))}.imp-fields [data-r=name]{grid-column:span 3}.imp-fields [data-r=amount]{grid-column:span 1}.imp-fields [data-r=due]{grid-column:span 2}.imp-fields [data-r=dest],.imp-fields [data-r=rep],.imp-fields [data-r=cat]{grid-column:span 2}}
 @media(min-width:900px){.sheet.wide{width:min(56rem,100%)}}
 @media(min-width:600px){.tb-r.rev{flex-direction:row-reverse}}
+.imp-act{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.imp-seg{background:transparent;border:0;color:var(--muted);font:inherit;font-weight:700;font-size:.82rem;padding:.35rem .8rem;min-height:36px;cursor:pointer}
+.imp-seg.on{background:rgba(251,191,36,.18);color:var(--amber)}.imp-seg[data-r=act-keep].on{background:rgba(22,228,234,.15);color:var(--cyan,#16e4ea)}
+.imp-row.is-upd{border-color:rgba(251,191,36,.55)}
+.imp-diff{flex:1 1 100%;font-size:.84rem;display:grid;gap:.15rem;color:var(--muted)}.imp-diff b{color:var(--text,inherit);font-size:.82rem}
+.imp-drow{display:flex;flex-wrap:wrap;gap:.1rem .5rem;align-items:baseline}.imp-drow>span:first-child{min-width:4.5rem;font-weight:700}
+.imp-drow .from{text-decoration:line-through;opacity:.75}.imp-drow .to{color:var(--green);font-weight:700}
