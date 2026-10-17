@@ -445,3 +445,38 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .imp-diff{flex:1 1 100%;font-size:.84rem;display:grid;gap:.15rem;color:var(--muted)}.imp-diff b{color:var(--text,inherit);font-size:.82rem}
 .imp-drow{display:flex;flex-wrap:wrap;gap:.1rem .5rem;align-items:baseline}.imp-drow>span:first-child{min-width:4.5rem;font-weight:700}
 .imp-drow .from{text-decoration:line-through;opacity:.75}.imp-drow .to{color:var(--green);font-weight:700}
+
+/* PayAviator load-up: same navy-to-sky and drifting clouds as the Android app splash */
+.boot{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#051328 0%,#0b234b 55%,#0c79bb 100%);color:#fff;opacity:1;transition:opacity .28s ease;padding:1.5rem;box-sizing:border-box}
+.boot.out{opacity:0;pointer-events:none}
+.boot-sky{position:absolute;inset:0;pointer-events:none}
+.bc{position:absolute;left:0;fill:#fff;will-change:transform;animation:bootdrift linear infinite}
+.bc g{fill:#fff}
+.bc.c1{top:9%;width:min(30vw,30vh);opacity:.10;animation-duration:120s;animation-delay:-70s}
+.bc.c2{top:18%;width:min(24vw,24vh);opacity:.08;animation-duration:120s;animation-delay:-20s}
+.bc.c3{top:58%;width:min(28vw,28vh);opacity:.11;animation-duration:80s;animation-delay:-50s}
+.bc.c4{top:69%;width:min(38vw,38vh);opacity:.14;animation-duration:80s;animation-delay:-15s}
+.bc.c5{top:82%;width:min(50vw,50vh);opacity:.20;animation-duration:56s;animation-delay:-40s}
+.bc.c6{top:88%;width:min(44vw,44vh);opacity:.17;animation-duration:56s;animation-delay:-8s}
+@keyframes bootdrift{from{transform:translate3d(-60vw,0,0)}to{transform:translate3d(120vw,0,0)}}
+.boot-core{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;animation:bootin .45s ease both}
+@keyframes bootin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.boot-logo{width:clamp(84px,22vmin,132px);height:auto;aspect-ratio:1;border-radius:22%;margin-bottom:1.1rem;display:block}
+.boot-name{margin:0;font-size:clamp(1.5rem,4.2vmin,2rem);font-weight:600;letter-spacing:.02em;line-height:1.2}
+.boot-tag{margin:.5rem 0 0;font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#16e4ea}
+.boot-bar{display:block;position:relative;overflow:hidden;width:clamp(120px,30vmin,200px);height:3px;border-radius:2px;background:rgba(255,255,255,.24);margin-top:2.2rem}
+.boot-bar i{position:absolute;top:0;bottom:0;left:0;width:38%;border-radius:2px;background:#16e4ea;animation:bootbar 1.5s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes bootbar{from{transform:translateX(-100%)}to{transform:translateX(263%)}}
+.boot-msg{position:relative;margin:.9rem 0 0;font-size:.82rem;color:rgba(214,232,248,.85);min-height:1.3em;display:grid;justify-items:center}
+.boot-msg span{grid-area:1/1}
+.boot-msg .m2{opacity:0;animation:bootslow 30s linear forwards}
+.boot-msg .m1{animation:bootfast 30s linear forwards}
+@keyframes bootslow{0%,49%{opacity:0}50%,100%{opacity:1}}
+@keyframes bootfast{0%,49%{opacity:1}50%,100%{opacity:0}}
+body.app .fatal-ns{position:fixed;inset:0;z-index:70;background:#0b234b;display:flex;align-items:center;justify-content:center}
+@media (max-height:420px){.boot-logo{margin-bottom:.5rem}.boot-bar{margin-top:1rem}.boot-tag{display:none}}
+@media (prefers-reduced-motion:reduce){
+ .bc,.boot-bar i,.boot-core{animation:none}.boot{transition:none}
+ .bc.c1{left:8%}.bc.c2{left:62%}.bc.c3{left:24%}.bc.c4{left:60%}.bc.c5{left:2%}.bc.c6{left:58%}
+ .boot-bar i{left:31%}
+}

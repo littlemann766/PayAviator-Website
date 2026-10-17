@@ -204,7 +204,7 @@ export function mountShell({ key, title, sub, actions }) {
   const side = h('aside', { class: 'side' },
     h('a', { class: 'brand', href: 'index.html' }, h('img', { src: 'img/logo-64.png', width: 36, height: 36, alt: '' }), h('span', { text: 'PayAviator' })),
     h('p', { class: 'side-cap', text: 'Menu' }), h('nav', { 'aria-label': 'Main' }, navLinks(key)),
-    h('div', { class: 'side-foot' }, h('div', { class: 'plan-mini' }, h('b', { text: auth.demo ? 'Demo mode' : 'Signed in' }), h('small', { text: auth.demo ? 'Sample data, nothing is saved to your account.' : (u && u.email) || '' })), syncPill()));
+    h('div', { class: 'side-foot' }, h('div', { class: 'plan-mini' }, auth.demo ? h('b', { text: 'Demo mode' }) : null, h('small', { text: auth.demo ? 'Sample data, nothing is saved to your account.' : (u && u.email) || '' }))));
   const main = h('main', { class: 'content', id: 'main', tabindex: '-1' });
   const hd = h('div', { class: 'ttl' }, h('h1', { text: title }), h('p', { text: sub || '' }));
   const top = h('header', { class: 'top' }, h('div', { class: 'top-in' }, hd, h('div', { class: 'tools' }, syncPill(), accountMenu())));
@@ -215,7 +215,17 @@ export function mountShell({ key, title, sub, actions }) {
   return { main, setHeader(t, s) { hd.firstChild.textContent = t; hd.lastChild.textContent = s || ''; } };
 }
 
+/** Fade out the load-up screen (kept up at least ~0.7 s so it never just flashes). */
+export function hideBoot() {
+  const b = document.getElementById('boot');
+  if (!b || b.dataset.done) return;
+  b.dataset.done = '1';
+  const wait = Math.max(0, 700 - (window.performance && performance.now ? performance.now() : 700));
+  setTimeout(() => { b.classList.add('out'); setTimeout(() => b.remove(), 360); }, wait);
+}
+
 export function showFatal(title, text, retry) {
+  hideBoot();
   const root = $('#root');
   root.replaceChildren(h('div', { class: 'fatal' }, h('div', { class: 'card empty' }, h('span', { class: 'e-i' }, icon('alert')), h('h2', { text: title }), h('p', { text }),
     retry ? h('button', { class: 'btn primary', type: 'button', text: 'Try again', onclick: retry }) : null, h('a', { class: 'btn ghost', href: 'mailto:support@payaviator.app', text: 'Contact support' }))));
@@ -250,7 +260,7 @@ export async function bootPage({ key, title, sub, render }) {
       if (api.status.status === 'error' && api.status.error && api.status.error.code === 'EMAIL_NOT_VERIFIED') location.replace('signin.html?verify=1');
     }
   });
-  paintSync(); paint(); watchIdle();
+  paintSync(); paint(); watchIdle(); hideBoot();
   return shell;
 }
 export { num };
