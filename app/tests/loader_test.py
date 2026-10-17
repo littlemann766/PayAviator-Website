@@ -19,13 +19,13 @@ def check(n, c, x=''):
     else: fails.append(n); print('  FAIL', n, x)
 PAGES = ['index', 'calendar', 'bills', 'income', 'budget', 'accounts', 'settings', 'activity']
 WIDTHS = [(360, 740), (390, 844), (768, 1024), (1280, 800), (1920, 1080)]
-MET = "()=>{const b=document.getElementById('boot');if(!b)return null;const r=b.getBoundingClientRect(),d=document.documentElement;const cs=getComputedStyle(b);const clouds=[...b.querySelectorAll('.bc')].map(c=>c.getBoundingClientRect().width);const core=b.querySelector('.boot-core').getBoundingClientRect();const logo=b.querySelector('.boot-logo').getBoundingClientRect();return{w:r.width,h:r.height,iw:innerWidth,ih:innerHeight,sw:d.scrollWidth,cw:d.clientWidth,pos:cs.position,anim:getComputedStyle(b.querySelector('.bc')).animationName,barAnim:getComputedStyle(b.querySelector('.boot-bar i')).animationName,clouds,coreL:core.left,coreR:core.right,coreT:core.top,coreB:core.bottom,logo:logo.width}}"
+MET = "()=>{const b=document.getElementById('boot');if(!b)return null;const r=b.getBoundingClientRect(),d=document.documentElement;const cs=getComputedStyle(b);const clouds=[...b.querySelectorAll('.bl')].map(c=>c.getBoundingClientRect().width);const core=b.querySelector('.boot-core').getBoundingClientRect();const logo=b.querySelector('.boot-logo').getBoundingClientRect();return{w:r.width,h:r.height,iw:innerWidth,ih:innerHeight,sw:d.scrollWidth,cw:d.clientWidth,pos:cs.position,anim:getComputedStyle(b.querySelector('.bl')).animationName,barAnim:getComputedStyle(b.querySelector('.boot-bar i')).animationName,clouds,coreL:core.left,coreR:core.right,coreT:core.top,coreB:core.bottom,logo:logo.width}}"
 with sync_playwright() as p:
     br = p.chromium.launch()
     # 1. markup + CSP on every app page (the loader must not need inline styles/scripts)
     for pg_ in PAGES:
         t = open(os.path.join(ROOT, 'app', pg_ + '.html')).read()
-        check(f'{pg_}: has load-up markup', 'id="boot"' in t and 'class="bc c1"' in t)
+        check(f'{pg_}: has load-up markup', 'id="boot"' in t and 'class="bl far"' in t and 'class="bl front"' in t)
         check(f'{pg_}: no inline style/script added for loader', 'style=' not in t and '<script>' not in t)
         check(f'{pg_}: css cache string bumped', re.search(r'app\.css\?v=\d{12}', t) is not None)
     # 2. loader visible while JS has not mounted; geometry per size
@@ -34,15 +34,22 @@ with sync_playwright() as p:
         pg.on('pageerror', lambda e: errs.append(str(e)))
         csp = []; pg.on('console', lambda m: csp.append(m.text) if 'Content Security Policy' in m.text else None)
         pg.route('**/js/pages/*.js', lambda r: r.abort())
-        pg.goto(B + 'index.html?demo=1'); pg.wait_for_timeout(1500)
+        pg.goto(B + 'index.html?demo=1'); pg.wait_for_timeout(2800)
         m = pg.evaluate(MET)
         check(f'{w}: loader covers the viewport', m and m['pos'] == 'fixed' and abs(m['w'] - w) < 1 and abs(m['h'] - h) < 1, m)
         check(f'{w}: no horizontal scroll', m and m['sw'] <= m['cw'], m)
         check(f'{w}: content inside the screen', m and m['coreL'] >= 0 and m['coreR'] <= w and m['coreT'] >= 0 and m['coreB'] <= h, m)
         check(f'{w}: logo size sensible (84..132)', m and 83 <= m['logo'] <= 133, m)
-        check(f'{w}: clouds + bar animate', m and m['anim'] == 'bootdrift' and m['barAnim'] == 'bootbar', m)
-        co = pg.evaluate("()=>[...document.querySelectorAll('.bc')].map(c=>[parseFloat(getComputedStyle(c).opacity),c.getBoundingClientRect().width])")
-        check(f'{w}: six soft clouds (opacity<=0.2, narrower than the screen)', len(co) == 6 and all(o <= 0.21 and cw < w for o, cw in co), co)
+        check(f'{w}: clouds + bar animate', m and m['anim'] == 'bootfly' and m['barAnim'] == 'bootbar', m)
+        co = pg.evaluate("()=>[...document.querySelectorAll('.bl')].map(c=>{const s=getComputedStyle(c);return [c.className.replace('bl ',''),parseFloat(s.animationDuration),c.getBoundingClientRect().height,c.getBoundingClientRect().width,s.backgroundImage.split('radial-gradient').length-1]})")
+        check(f'{w}: five cloud depth layers (far, mist, mid, near, front)', [c[0] for c in co] == ['far', 'mist', 'mid', 'near', 'front'], co)
+        check(f'{w}: layers drift at different speeds (parallax, far slowest)', len(set(c[1] for c in co)) == 5 and co[0][1] > co[2][1] > co[3][1] > co[4][1], co)
+        check(f'{w}: every layer is a seamless wide tile (wider than the screen) with many soft puffs', all(c[3] > w and c[4] >= 15 for c in co), co)
+        check(f'{w}: layers are tall enough to fill sky (>= w/4 each)', all(c[2] >= w / 4 - 1 for c in co), co)
+        vl = pg.evaluate("()=>[getComputedStyle(document.querySelector('.boot-veil')).animationName,getComputedStyle(document.querySelector('.boot-logo')).animationName]")
+        check(f'{w}: logo emerges from a clearing cloud veil', vl == ['bootclear', 'bootemerge'], vl)
+        tr = pg.evaluate("()=>[...document.querySelectorAll('.bl')].every(c=>!/(?<!-)filter/.test(c.getAttribute('style')||'')&&getComputedStyle(c).filter==='none')")
+        check(f'{w}: cloud layers use transform-only animation (no filter/paint cost)', tr)
         check(f'{w}: no CSP violations from the loader', not csp, csp)
         if SH: pg.screenshot(path=f'{SH}/web-loading-{w}.png')
         ctx.close()
@@ -50,7 +57,7 @@ with sync_playwright() as p:
     ctx = br.new_context(viewport={'width': 390, 'height': 844}, reduced_motion='reduce'); pg = ctx.new_page()
     pg.route('**/js/pages/*.js', lambda r: r.abort()); pg.goto(B + 'index.html?demo=1'); pg.wait_for_timeout(500)
     m = pg.evaluate(MET)
-    check('reduced motion: clouds and bar are still', m and m['anim'] == 'none' and m['barAnim'] == 'none', m)
+    check('reduced motion: clouds, veil, logo and bar are still', m and m['anim'] == 'none' and m['barAnim'] == 'none' and pg.evaluate("[getComputedStyle(document.querySelector('.boot-veil')).animationName,getComputedStyle(document.querySelector('.boot-logo')).animationName].join()") == 'none,none', m)
     if SH: pg.screenshot(path=f'{SH}/web-loading-390-reduced-motion.png')
     ctx.close()
     # 4. slow-load fallback text switches after 15 s (CSS only): at t=0 first message visible
