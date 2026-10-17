@@ -3,6 +3,7 @@ import { bootPage, openSheet, confirmDialog, toast, savedToast } from '../ui.js'
 import { api } from '../api.js';
 import { REPEATS, billOccurrences, billTotals, repeatLabel } from '../calc.js';
 import { openBill, categoryOptions } from '../forms.js';
+import { openImport } from '../import.js';
 import { colorDot, DEFAULT_CATEGORIES, monthNav, viewMonth, stat, emptyState, dueTag } from '../views.js';
 
 const filter = { q: '', cat: '', showPaid: false };
@@ -28,12 +29,13 @@ function render(main) {
   const cat = h('select', { 'aria-label': 'Category' }, h('option', { value: '' }, 'All categories'), categoryOptions().map((c) => h('option', { value: c, selected: filter.cat === c }, c)));
   cat.addEventListener('change', () => { filter.cat = cat.value; rerender(); });
   const addBtn = h('button', { class: 'btn primary', type: 'button', 'data-add': 'bill', onclick: () => openBill(null) }, icon('plus'), h('span', { text: 'Add bill' }));
+  const importBtn = h('button', { class: 'btn ghost', type: 'button', 'data-import': 'bills', onclick: () => openImport() }, icon('doc'), h('span', { text: 'Import from spreadsheet' }));
   const list = [];
-  if (!all.length) list.push(emptyState({ icn: 'bills', title: 'No bills yet', text: 'Add your first bill to see due dates and what is left to pay. Bills you added in the phone app appear here after you update the app to 4.1.5 or later and sign in with the same account.', action: h('button', { class: 'btn primary', type: 'button', onclick: () => openBill(null) }, icon('plus'), h('span', { text: 'Add bill' })) }));
+  if (!all.length) list.push(emptyState({ icn: 'bills', title: 'No bills yet', text: 'Add your first bill to see due dates and what is left to pay. Bills you added in the phone app appear here after you update the app to 4.1.5 or later and sign in with the same account.', action: h('div', { class: 'tb-r' }, h('button', { class: 'btn primary', type: 'button', onclick: () => openBill(null) }, icon('plus'), h('span', { text: 'Add bill' })), h('button', { class: 'btn ghost', type: 'button', 'data-import': 'empty', onclick: () => openImport() }, icon('doc'), h('span', { text: 'Import from spreadsheet' }))) }));
   else if (!shown.length) list.push(emptyState({ icn: 'search', title: occ.length ? 'No unpaid bills match' : 'No bills this month', text: occ.length ? 'Paid recurring bills return on their next due date. Turn on Show paid bills to see them.' : 'Nothing is due this month. Use the arrows to look at another month.' }));
   else { let last = ''; const wrap = h('div', { class: 'billwrap' }); for (const o of shown) { if (o.iso !== last) { wrap.append(h('h3', { class: 'day', text: fmtDay(o.iso) })); last = o.iso; } wrap.append(billCard(o, today)); } list.push(wrap); }
   main.replaceChildren(
-    h('div', { class: 'toolbar' }, h('div', { class: 'tb-l' }, monthNav(() => rerender()), h('small', { 'data-count': '', text: `${t.count} bill${t.count === 1 ? '' : 's'} \u00b7 ${money(t.total)} total` })), addBtn),
+    h('div', { class: 'toolbar' }, h('div', { class: 'tb-l' }, monthNav(() => rerender()), h('small', { 'data-count': '', text: `${t.count} bill${t.count === 1 ? '' : 's'} \u00b7 ${money(t.total)} total` })), h('div', { class: 'tb-r rev' }, addBtn, importBtn)),
     h('div', { class: 'grid sum' }, stat('Unpaid this month', money(t.unpaid), '', 'unpaid'), stat('Overdue', t.overdue ? `${t.overdue} bill${t.overdue > 1 ? 's' : ''}` : 'None', t.overdue ? 'neg' : '', 'overdue'), stat('Paid so far', money(t.paid), '', 'paid')),
     h('div', { class: 'filters' }, h('label', { class: 'search' }, icon('search'), search), h('label', { class: 'sel2' }, cat, icon('chevd', 'ic sm'))), h('label', { class: 'showpaid' }, h('input', { type: 'checkbox', 'data-show-paid': '', checked: !!filter.showPaid, onchange: (e) => { filter.showPaid = e.target.checked; rerender(); } }), h('span', { text: 'Show paid bills' })), ...list);
 }

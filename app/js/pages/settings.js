@@ -3,6 +3,7 @@ import { bootPage, openSheet, confirmDialog, toast, signOutNow } from '../ui.js'
 import { api } from '../api.js';
 import { auth, authMessage } from '../auth.js';
 import { planKey, planInfo, planCard, paintHeadingBadge } from '../plans.js';
+import { openImport } from '../import.js';
 
 let rerender = () => {};
 let billing = null;
@@ -69,6 +70,7 @@ function render(main) {
       li('mail', 'Email', u.email || '', u.emailVerified ? h('span', { class: 'tag ok', text: 'Verified' }) : h('span', { class: 'tag warn', text: 'Not verified' })),
       li('shield', 'Sign-in method', method))),
     h('section', { class: 'card', id: 'cushion' }, h('div', { class: 'row-h' }, h('h2', { text: 'Cushion' })), h('ul', { class: 'slist' }, li('shield', 'Protected money', cushionTxt, h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'cushion', onclick: openCushion }, icon('pencil'), h('span', { text: 'Edit' })))), h('p', { class: 's-note', text: 'Safe to Spend = available money minus your cushion.' })),
+    h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Import' })), h('ul', { class: 'slist' }, li('doc', 'Import from spreadsheet', 'Bring bills in from an Excel (.xlsx) or CSV file. You choose what comes over.', h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'import', onclick: () => openImport() }, icon('plus'), h('span', { text: 'Import' }))))),
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Sync' })), h('ul', { class: 'slist' },
       li('cloud', 'Status', `Last synced ${lastSync}${st.pending ? ` \u00b7 ${st.pending} change${st.pending > 1 ? 's' : ''} waiting` : ''}`, syncTag),
       li('phone', 'Your phone', 'Android PayAviator 4.1.4 or later syncs with this page', h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'sync', onclick: async () => { await api.sync(); toast(api.status.status === 'ok' ? 'Up to date.' : 'Could not sync right now. We will keep trying.', api.status.status === 'ok' ? 'ok' : 'warn'); } }, icon('refresh'), h('span', { text: 'Sync now' }))))),

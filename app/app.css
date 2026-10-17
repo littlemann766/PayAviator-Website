@@ -406,3 +406,35 @@ body.signin .si-brand{text-align:center;padding:1.5rem 1rem 0}body.signin .si-br
 .g-nav.prev{left:.2rem}.g-nav.prev .ic{transform:rotate(180deg)}.g-nav.next{right:.2rem}
 @media (min-width:700px){.g-nav{display:inline-flex}}
 @media (prefers-reduced-motion:reduce){.g-dot::before{transition:none}}
+
+/* Import from spreadsheet */
+.imp-drop{display:flex;flex-direction:column;align-items:center;gap:.3rem;text-align:center;padding:2rem 1rem;border:2px dashed rgba(22,228,234,.45);border-radius:20px;background:rgba(22,228,234,.06);cursor:pointer;position:relative;transition:background .15s,border-color .15s}
+.imp-drop:hover,.imp-drop.over{background:rgba(22,228,234,.14);border-color:var(--cyan)}
+.imp-drop:focus-within{outline:3px solid rgba(22,228,234,.5);outline-offset:2px}
+.imp-drop .ic.big{width:2.6rem;height:2.6rem;color:var(--cyan)}
+.imp-drop b{font-size:1.1rem}.imp-drop span,.imp-drop small{color:var(--muted)}
+.imp-file{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.imp-priv{display:flex;gap:.5rem;align-items:center;color:var(--muted);font-size:.9rem;margin:.9rem 0}.imp-priv .ic{color:var(--cyan);flex:none}
+.imp-how{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:.9rem 1rem;font-size:.92rem;margin-bottom:.9rem}
+.imp-how ol{margin:.4rem 0 0;padding-left:1.2rem;color:var(--muted)}.imp-how li{margin:.2rem 0}
+.imp-tips summary{cursor:pointer;color:var(--cyan);font-weight:700;font-size:.92rem}.imp-tips p{color:var(--muted);font-size:.9rem;margin-top:.4rem}
+.imp-sum{font-weight:700;margin-bottom:.6rem}
+.imp-hint{color:var(--muted);font-size:.88rem;margin:.4rem 0 .8rem}.imp-hint.warn{color:var(--amber)}
+.imp-tools{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem}.imp-tools .btn{flex:0 0 auto}
+.imp-hdr{display:flex;gap:.6rem;align-items:center;margin:.2rem 0 1rem;font-weight:600}
+.imp-hdr input,.imp-chk input{width:1.3rem;height:1.3rem;accent-color:var(--cyan);flex:none}
+.imp-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.4rem .7rem;padding:.75rem;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05);margin-bottom:.6rem}
+.imp-row.is-skip{opacity:.6}.imp-row.is-dup{border-color:rgba(251,191,36,.55)}.imp-row.is-bad{border-color:rgba(255,123,138,.65)}
+.imp-chk{padding-top:.55rem;display:block;margin:0}
+.imp-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.imp-fields [data-r=name],.imp-fields [data-r=cat]{grid-column:1/-1}
+.imp-fields input,.imp-fields select{width:100%;min-width:0;background:#071a3b;border:1px solid rgba(255,255,255,.18);border-radius:11px;color:#fff;font:inherit;font-size:.95rem;padding:.55rem .7rem;min-height:2.5rem}
+.imp-fields input:focus,.imp-fields select:focus{outline:0;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(22,228,234,.22)}
+.imp-fields .invalid{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,123,138,.2)}
+.imp-fields [hidden]{display:none}
+.imp-flag{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.3rem .6rem;align-items:center}.imp-flag:empty{display:none}.imp-flag small{color:var(--muted);font-size:.82rem}
+.imp-done{text-align:center;padding:1.2rem .5rem}.imp-done h3{font-size:1.3rem;margin:.8rem 0 .3rem}.imp-done p{color:var(--muted)}
+.imp-stats{list-style:none;padding:0;margin:1rem 0 0;color:var(--muted);font-size:.92rem}.imp-stats .neg{color:var(--red)}
+@media(min-width:600px){.imp-fields{grid-template-columns:repeat(6,minmax(0,1fr))}.imp-fields [data-r=name]{grid-column:span 3}.imp-fields [data-r=amount]{grid-column:span 1}.imp-fields [data-r=due]{grid-column:span 2}.imp-fields [data-r=dest],.imp-fields [data-r=rep],.imp-fields [data-r=cat]{grid-column:span 2}}
+@media(min-width:900px){.sheet.wide{width:min(56rem,100%)}}
+@media(min-width:600px){.tb-r.rev{flex-direction:row-reverse}}

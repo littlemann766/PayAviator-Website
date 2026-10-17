@@ -32,7 +32,7 @@ function onKey(e) {
   else if (!e.shiftKey && (document.activeElement === last || !top.node.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
 }
 document.addEventListener('keydown', onKey, true);
-function openLayer(kind, content, { initialFocus, onClose } = {}) {
+export function openLayer(kind, content, { initialFocus, onClose } = {}) {
   const from = document.activeElement;
   const node = h('div', { class: 'layer' + (stack.length ? ' over' : ''), 'data-kind': kind });
   const scrim = h('div', { class: 'scrim' });
