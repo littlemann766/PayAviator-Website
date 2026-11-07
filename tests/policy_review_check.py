@@ -266,28 +266,18 @@ def main():
         else:
             ok(f'sitemap {loc} lastmod 2026-11-07')
     support = read('support.html')
-    aim = 'We aim to respond to support requests within 72 hours.'
-    longer = 'Some issues require additional investigation and may take longer to resolve.'
-    urgent = 'For urgent banking issues or suspected fraud, contact your bank directly.'
+    plain = 'PayAviator is independently operated. Support is not monitored continuously. We aim to respond to support requests within 72 hours. Some issues require additional investigation and may take longer to resolve. For urgent banking issues or suspected fraud, contact your bank directly.'
     for rel, text in (('support.html', support), ('faq.html', faq), ('terms.html', terms)):
-        if aim not in text or longer not in text or urgent not in text:
-            fail(rel + ' is missing the proposed 72-hour support wording')
-        elif 'business day' in text.lower() or 'guaranteed' in text.lower():
-            fail(rel + ' states a business-day rule or a guarantee')
+        if plain not in text:
+            fail(rel + ' is missing the concise support wording')
+        elif 'business day' in text.lower() or 'automatic reply' in text.lower() or 'elapsed hour' in text.lower():
+            fail(rel + ' still has the long support lecture')
         else:
-            ok(rel + ' has the 72-hour first-response aim')
-    if 'not a promise that the issue will be resolved in 72 hours' not in support:
-        fail('support page does not limit 72 hours to a first response')
+            ok(rel + ' uses the concise support wording')
+    if '72-hour support aim is not a waiting period' not in delete:
+        fail('delete page no longer says the support aim is not a wait for deletion')
     else:
-        ok('72 hours is a first response, not a resolution guarantee')
-    if 'do not send an automatic reply' not in support.lower() and 'We do not send an automatic reply' not in support:
-        fail('support page promises or omits the no-automatic-reply line')
-    else:
-        ok('no automatic support reply')
-    if 'without waiting' not in support or 'deadline set by law' not in support:
-        fail('support aim is not kept off deletion and legal deadlines')
-    else:
-        ok('72-hour aim does not gate deletion or legal deadlines')
+        ok('delete page keeps one line that support timing is not a deletion wait')
     if 'not described here as what the app does today' not in delete:
         fail('disconnect draft describes an unverified fix as shipped')
     else:
