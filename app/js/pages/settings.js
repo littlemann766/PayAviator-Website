@@ -40,7 +40,7 @@ async function openPortal() {
 
 function openDeleteAccount() {
   openSheet({
-    title: 'Delete your account', sub: 'This permanently deletes your PayAviator account, linked banks and synced data. It cannot be undone. Data on your phone stays until you delete it there. If you have not signed in recently, nothing is deleted until you sign in again. Subscriptions bought in Google Play or on the web must be cancelled separately. Deleting this account does not cancel Plus.',
+    title: 'Delete your account', sub: 'This deletes your PayAviator sign-in and asks PayAviator to remove every linked bank connection. It does not close those accounts at your bank. It does not ask why, and you do not have to cancel Plus first. Plus can keep renewing until you cancel it separately. If you have not signed in recently, nothing is deleted until you sign in again. Bills you entered on your phone stay there.',
     submitText: 'Delete my account forever', values: { confirm: '' },
     fields: [{ name: 'confirm', label: 'Type DELETE to confirm', type: 'text', validate: (v) => (String(v).trim() === 'DELETE' ? null : 'Type DELETE in capital letters to continue.') }],
     onSubmit: async () => {
@@ -86,7 +86,7 @@ function render(main) {
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Help & legal' })), h('ul', { class: 'slist' },
       li('mail', 'Support', 'support@payaviator.app', h('a', { class: 'lnk', href: 'mailto:support@payaviator.app', text: 'Email us' })),
       li('doc', 'Privacy policy and Terms', 'How we handle your data', h('span', null, h('a', { class: 'lnk', href: '../privacy.html', text: 'Privacy' }), ' \u00b7 ', h('a', { class: 'lnk', href: '../terms.html', text: 'Terms' }))))),
-    h('section', { class: 'card danger', id: 'delete-account' }, h('div', { class: 'row-h' }, h('h2', { text: 'Delete your data or account' })), h('p', { class: 'muted', text: 'Delete synced cloud data removes your bills, income, spending and budget from PayAviator\u2019s servers. Data on your phone stays until you clear it there. To delete your whole account, linked banks and all, use Delete account.' }),
+    h('section', { class: 'card danger', id: 'delete-account' }, h('div', { class: 'row-h' }, h('h2', { text: 'Delete your data or account' })), h('p', { class: 'muted', text: 'Delete synced data removes bills, income, spending and budget from PayAviator\u2019s servers and leaves your account and bank connections. This page cannot disconnect one bank. To delete the whole PayAviator account, use Delete account. You do not have to cancel Plus first, and deleting does not cancel it.' }),
       h('div', { class: 'tb-r' }, h('button', { class: 'btn danger-o', type: 'button', 'data-act': 'delete-sync', onclick: async () => { if (!(await confirmDialog({ title: 'Delete synced data?', text: 'This removes your synced bills, income, spending and budget from the cloud. It cannot be undone.', confirmText: 'Delete synced data' }))) return; try { const r = await api.deleteAllCloud(); toast(`Deleted ${r.deleted} synced item${r.deleted === 1 ? '' : 's'}.`); await api.init({ uid: auth.user.uid, getToken: (f) => auth.getToken(f), demo: auth.demo }); } catch (e) { toast(e.message || 'Could not delete synced data.', 'warn'); } } }, icon('trash'), h('span', { text: 'Delete synced data' })),
         h('button', { class: 'btn danger', type: 'button', 'data-act': 'delete-account', onclick: openDeleteAccount }, icon('trash'), h('span', { text: 'Delete my account' }))))));
 }

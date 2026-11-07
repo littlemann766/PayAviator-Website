@@ -93,7 +93,7 @@ def main():
     banned = {
         'privacy.html': ["We don't sell or share", 'all of your data stored', 'to send bill reminders', 'sold through Google Play Billing', 'deleted 30 days later'],
         'faq.html': ['does not sell or share your personal information'],
-        'delete-account.html': ['only what the law requires', 'We delete your account and data within 30 days', 'We aim to complete email requests within 30 days'],
+        'delete-account.html': ['only what the law requires', 'We delete your account and data within 30 days', 'We aim to complete email requests within 30 days', 'href="/app/settings.html#plan">Delete it myself'],
         'terms.html': ['You can subscribe in the Android app through Google Play'],
         'pricing.html': ['there are no refunds for partial periods', 'first bank account is on us'],
         'index.html': ['first bank account is on us'],
@@ -195,6 +195,23 @@ def main():
         fail('delete-account page does not link to #delete-account')
     else:
         ok('delete-account page links to #delete-account')
+    for needle in (
+        'does not close the account at your bank',
+        'Your PayAviator sign-in stays',
+        'no separate server route for one account inside a connection',
+        'The website has no disconnect button',
+        'does not ask why',
+        'do not have to cancel Plus first',
+        'id="disconnect-a-bank"',
+    ):
+        if needle not in delete:
+            fail('delete-account missing: ' + needle)
+        else:
+            ok('delete-account has: ' + needle)
+    if 'do not have to cancel Plus first' not in settings or 'does not ask why' not in settings:
+        fail('web delete sheet still sounds like a required cancel or a reason')
+    else:
+        ok('web delete sheet is one confirmation, no reason, no forced cancel')
     if "id: 'delete-account'" not in settings:
         fail('settings page has no delete-account anchor')
     else:
