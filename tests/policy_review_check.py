@@ -259,16 +259,39 @@ def main():
 
     # Sitemap lastmod for pages this review changed.
     site = read('sitemap.xml')
-    for loc in ('/', '/privacy.html', '/terms.html', '/delete-account.html', '/pricing.html', '/faq.html', '/how-it-works.html'):
+    for loc in ('/', '/privacy.html', '/terms.html', '/delete-account.html', '/pricing.html', '/faq.html', '/how-it-works.html', '/support.html'):
         block = re.search(r'<loc>https://payaviator\.app' + re.escape(loc) + r'</loc><lastmod>([^<]+)</lastmod>', site)
         if not block or block.group(1) != '2026-11-07':
             fail(f'sitemap lastmod for {loc} is not 2026-11-07')
         else:
             ok(f'sitemap {loc} lastmod 2026-11-07')
-    if 'support.html</loc><lastmod>2026-10-13' not in site:
-        fail('unchanged support.html lastmod should stay 2026-10-13')
+    support = read('support.html')
+    aim = 'We aim to respond to support requests within 72 hours.'
+    longer = 'Some issues require additional investigation and may take longer to resolve.'
+    urgent = 'For urgent banking issues or suspected fraud, contact your bank directly.'
+    for rel, text in (('support.html', support), ('faq.html', faq), ('terms.html', terms)):
+        if aim not in text or longer not in text or urgent not in text:
+            fail(rel + ' is missing the proposed 72-hour support wording')
+        elif 'business day' in text.lower() or 'guaranteed' in text.lower():
+            fail(rel + ' states a business-day rule or a guarantee')
+        else:
+            ok(rel + ' has the 72-hour first-response aim')
+    if 'not a promise that the issue will be resolved in 72 hours' not in support:
+        fail('support page does not limit 72 hours to a first response')
     else:
-        ok('unchanged support.html lastmod left at 2026-10-13')
+        ok('72 hours is a first response, not a resolution guarantee')
+    if 'do not send an automatic reply' not in support.lower() and 'We do not send an automatic reply' not in support:
+        fail('support page promises or omits the no-automatic-reply line')
+    else:
+        ok('no automatic support reply')
+    if 'without waiting' not in support or 'deadline set by law' not in support:
+        fail('support aim is not kept off deletion and legal deadlines')
+    else:
+        ok('72-hour aim does not gate deletion or legal deadlines')
+    if 'not described here as what the app does today' not in delete:
+        fail('disconnect draft describes an unverified fix as shipped')
+    else:
+        ok('unverified bank-disconnect fix is not described as shipped')
 
     print(f'\n{len(fails)} failed' if fails else '\npolicy review checks passed')
     return 1 if fails else 0
