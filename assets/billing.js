@@ -1,4 +1,5 @@
 /* PayAviator web billing: Firebase Google + email sign-in + Stripe Checkout / Customer Portal via api.payaviator.app */
+import { routeSubscription, manageFailure, safePortalUrl } from './subscription-route.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
@@ -190,28 +191,40 @@ function initAccount() {
     plan.textContent = 'Checking\u2026'; detail.textContent = '';
     try {
       const s = await api('/api/billing/status');
-      const ent = s.entitlement || s.plan || s.tier || {};
-      const isPlus = !!(s.plus || s.isPlus || s.premium || s.active || ent.active || /plus|premium/i.test(typeof ent === 'string' ? ent : (ent.tier || ent.plan || '')) || /active|trialing/i.test(s.status || s.subscriptionStatus || ''));
-      plan.textContent = isPlus ? 'PayAviator Plus' : 'Free';
+      const isPlus = s.plan === 'premium';
+      const where = s.source === 'stripe' ? 'Billed with Stripe. ' : s.source === 'play' ? 'Billed with Google Play. ' : '';
+      plan.textContent = isPlus ? 'PayAviator Plus' : s.plan === 'comp' ? 'Complimentary' : 'Free';
       plan.className = 'badge' + (isPlus ? ' green' : '');
-      const end = (s.cancelAtPeriodEnd && s.periodEnd) || s.currentPeriodEnd || s.periodEnd || s.expiresAt || ent.expiresAt || ent.currentPeriodEnd;
-      const cancelling = s.cancelAtPeriodEnd || ent.cancelAtPeriodEnd;
+      const end = s.periodEnd || s.expiresAt;
       const d = end ? new Date(typeof end === 'number' && end < 1e12 ? end * 1000 : end) : null;
       const ds = d && !isNaN(d) ? d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-      detail.textContent = (s.cancelAtPeriodEnd && s.periodEnd && ds) ? `Plus stays on until ${ds}.` : isPlus ? (cancelling ? `Cancelled. Plus stays on until ${ds || 'the end of the paid period'}.` : (ds ? `Renews on ${ds}.` : 'Active. Open the app to link more banks.')) : 'Your first bank, with all its accounts, is free. Plus lets you link more banks.';
-      box.dataset.status = JSON.stringify(s);
+      detail.textContent = s.source === 'stripe' && s.cancelAtPeriodEnd ? `${where}Cancellation is scheduled.${ds ? ` Access until ${ds}.` : ''}` : isPlus ? `${where}${ds ? `Access until ${ds}.` : 'No end date was returned.'}` : 'Your first bank, with all its accounts, is free. Plus lets you link more banks.';
+      box.dataset.status = JSON.stringify({ plan: s.plan, source: s.source, periodEnd: s.periodEnd, expiresAt: s.expiresAt, cancelAtPeriodEnd: s.cancelAtPeriodEnd, productId: s.productId });
     } catch (x) { plan.textContent = 'Unknown'; detail.textContent = x.message; }
   });
   mBtn.addEventListener('click', async () => {
     msg.classList.remove('ok'); msg.textContent = ''; mBtn.disabled = true; mBtn.textContent = 'Opening\u2026';
     try {
-      const r = await api('/api/billing/stripe/portal', { method: 'POST', body: {} });
-      if (!r.url) throw new Error('Couldn\u2019t open the billing portal. Please try again.');
-      location.assign(r.url);
+      if (!auth.currentUser) throw Object.assign(new Error('Sign in again.'), { code: 'SIGNIN' });
+      const s = await api('/api/billing/status');
+      const route = routeSubscription(s);
+      if (route.action === 'stripe-portal') {
+        const r = await api('/api/billing/stripe/portal', { method: 'POST', body: {} });
+        const url = safePortalUrl(r && r.url);
+        if (!url) throw Object.assign(new Error('Stripe did not return a billing link.'), { code: 'PORTAL_FAILED' });
+        msg.textContent = 'Opening Stripe. This page has not cancelled Plus.';
+        location.assign(url);
+        return;
+      }
+      if (route.action === 'play') {
+        msg.textContent = 'Opening Google Play. This page has not cancelled Plus.';
+        location.assign(route.url);
+        return;
+      }
+      msg.textContent = route.message;
     } catch (x) {
-      msg.innerHTML = x.code === 'NO_STRIPE_CUSTOMER' ? 'You don\u2019t have a web subscription yet. <a href="/pricing.html">See plans</a>. If you subscribed in the app, manage it in Google Play under Payments &amp; subscriptions.' : '';
-      if (x.code !== 'NO_STRIPE_CUSTOMER') msg.textContent = x.message;
-    } finally { mBtn.disabled = false; mBtn.textContent = 'Manage subscription'; }
+      msg.textContent = manageFailure(x);
+    } finally { mBtn.disabled = false; if (mBtn.textContent === 'Opening\u2026') mBtn.textContent = 'Manage or cancel'; }
   });
 }
 

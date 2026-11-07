@@ -208,7 +208,7 @@ def main():
             fail('delete-account missing: ' + needle)
         else:
             ok('delete-account has: ' + needle)
-    if 'do not have to cancel Plus first' not in settings or 'does not ask why' not in settings:
+    if 'does not cancel a Stripe or Google Play subscription' not in settings or 'do not have to cancel it first' not in settings or 'not asked why' not in settings:
         fail('web delete sheet still sounds like a required cancel or a reason')
     else:
         ok('web delete sheet is one confirmation, no reason, no forced cancel')

@@ -3,6 +3,7 @@ import { bootPage, openSheet, confirmDialog, toast, signOutNow } from '../ui.js'
 import { api } from '../api.js';
 import { auth, authMessage } from '../auth.js';
 import { planKey, planInfo, planCard, paintHeadingBadge } from '../plans.js';
+import { routeSubscription, manageFailure, safePortalUrl } from '../../../assets/subscription-route.js';
 import { openImport } from '../import.js';
 
 let rerender = () => {};
@@ -22,25 +23,55 @@ function openCushion() {
   });
 }
 
+function accessDate(raw) {
+  if (!raw) return '';
+  const d = new Date(typeof raw === 'number' && raw < 1e12 ? raw * 1000 : raw);
+  return d && !isNaN(d) ? d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+}
+
 function planSub() {
   if (planInfo(billing)) return planInfo(billing).msg;
   if (!billing) return 'Your first bank, with all its accounts, is free.';
-  if (billing.plan === 'premium') {
-    const e = billing.periodEnd || billing.expiresAt, d = e ? new Date(typeof e === 'number' && e < 1e12 ? e * 1000 : e) : null;
-    const ds = d && !isNaN(d) ? d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-    return billing.cancelAtPeriodEnd ? `Cancelled. Plus stays on until ${ds || 'the end of the paid period'}.` : ds ? `Renews on ${ds}.` : 'Active.';
+  const through = accessDate(billing.periodEnd || billing.expiresAt);
+  const source = billing.source == null ? '' : String(billing.source);
+  if (source === 'stripe') {
+    if (billing.cancelAtPeriodEnd) return through ? `Billed with Stripe. Cancellation is scheduled. Access until ${through}.` : 'Billed with Stripe. Cancellation is scheduled. No end date was returned.';
+    return through ? `Billed with Stripe. Access until ${through}.` : 'Billed with Stripe. No end date was returned.';
   }
+  if (source === 'play') return through ? `Billed with Google Play. Access until ${through}.` : 'Billed with Google Play. No end date was returned.';
+  if (billing.plan === 'premium') return 'Plus is on. The status did not say whether Stripe or Google Play bills it.';
   return 'Your first bank, with all its accounts, is free. Plus lets you link more.';
 }
 
-async function openPortal() {
-  try { const r = await api.billingPortal(); if (!r.url) throw new Error('Couldn\u2019t open the billing portal. Please try again.'); location.assign(r.url); }
-  catch (e) { toast(e.code === 'NO_STRIPE_CUSTOMER' ? 'No web subscription yet. See plans, or manage Play subscriptions in Google Play.' : (e.message || 'Could not open billing.'), 'warn'); }
+async function openManage() {
+  try {
+    if (!auth.user) throw Object.assign(new Error('Sign in again.'), { code: 'SIGNIN' });
+    const status = await api.billing();
+    billing = status;
+    const route = routeSubscription(status);
+    if (route.action === 'stripe-portal') {
+      const r = await api.billingPortal();
+      const url = safePortalUrl(r && r.url);
+      if (!url) throw Object.assign(new Error('Stripe did not return a billing link.'), { code: 'PORTAL_FAILED' });
+      toast('Opening Stripe. This page has not cancelled Plus.');
+      location.assign(url);
+      return;
+    }
+    if (route.action === 'play') {
+      toast('Opening Google Play. This page has not cancelled Plus.');
+      location.assign(route.url);
+      return;
+    }
+    toast(route.message, 'warn');
+  } catch (e) {
+    toast(manageFailure(e), 'warn');
+  }
 }
 
 function openDeleteAccount() {
   openSheet({
-    title: 'Delete your account', sub: 'This deletes your PayAviator sign-in and asks PayAviator to remove every linked bank connection. It does not close those accounts at your bank. It does not ask why, and you do not have to cancel Plus first. Plus can keep renewing until you cancel it separately. If you have not signed in recently, nothing is deleted until you sign in again. Bills you entered on your phone stay there.',
+    title: 'Delete your account', sub: 'This deletes your PayAviator sign-in and asks PayAviator to remove every linked bank connection. It does not close those accounts at your bank. Deleting your PayAviator account does not cancel a Stripe or Google Play subscription. The subscription can keep renewing until you cancel it there. You do not have to cancel it first, and you are not asked why. If you have not signed in recently, nothing is deleted until you sign in again. Bills you entered on your phone stay there.',
+    extra: h('p', { class: 's-note' }, h('button', { type: 'button', class: 'linkbtn', 'data-act': 'manage-from-delete', onclick: (ev) => { ev.preventDefault(); openManage(); } }, 'Manage or cancel subscription')),
     submitText: 'Delete my account forever', values: { confirm: '' },
     fields: [{ name: 'confirm', label: 'Type DELETE to confirm', type: 'text', validate: (v) => (String(v).trim() === 'DELETE' ? null : 'Type DELETE in capital letters to continue.') }],
     onSubmit: async () => {
@@ -81,8 +112,8 @@ function render(main) {
       li('phone', 'App lock', 'Set up on your Android phone'))),
     h('section', { class: 'card', id: 'plan' }, h('div', { class: 'row-h' }, h('h2', { text: 'Plan & billing' })), h('ul', { class: 'slist' },
       li('card', planName, planSub(), (pk === 'plus' || special) ? null : h('a', { class: 'lnk', href: '../pricing.html', text: 'See plans' })),
-      special ? null : li('doc', 'Manage subscription', 'Update your card, see receipts or cancel in Stripe', h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'portal', onclick: openPortal }, icon('card'), h('span', { text: 'Manage' })))),
-      h('p', { class: 's-note', text: 'Subscribed in the Android app? Manage it in Google Play under Payments & subscriptions.' })),
+      special ? null : li('doc', 'Manage or cancel', 'Stripe for a website subscription, Google Play for an app subscription. Opening it does not cancel Plus by itself.', h('button', { class: 'btn sm ghost', type: 'button', 'data-act': 'portal', onclick: openManage }, icon('card'), h('span', { text: 'Manage or cancel' })))),
+      h('p', { class: 's-note', 'data-sub-note': '', text: 'The provider and end date above come from your account status. Nothing is cancelled until that provider says so.' })),
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Help & legal' })), h('ul', { class: 'slist' },
       li('mail', 'Support', 'support@payaviator.app', h('a', { class: 'lnk', href: 'mailto:support@payaviator.app', text: 'Email us' })),
       li('doc', 'Privacy policy and Terms', 'How we handle your data', h('span', null, h('a', { class: 'lnk', href: '../privacy.html', text: 'Privacy' }), ' \u00b7 ', h('a', { class: 'lnk', href: '../terms.html', text: 'Terms' }))))),
