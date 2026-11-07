@@ -71,7 +71,8 @@ function signInSheet() {
     <p class="hint err" id="siErr" role="alert"></p>
     <button class="btn primary subbtn" type="submit" id="siBtn">Sign in</button>
     <p class="fine" id="siFoot"></p>
-  </form>`;
+  </form>
+  <p class="fine" id="siLegal"></p>`;
   document.body.appendChild(dlg);
   const f = $('#siForm', dlg), err = $('#siErr', dlg), btn = $('#siBtn', dlg), foot = $('#siFoot', dlg), gBtn = $('#siGoogle', dlg);
   let mode = 'signin';
@@ -87,6 +88,10 @@ function signInSheet() {
       ? 'Already have an account? <button type="button" class="linkbtn" data-m="signin">Sign in</button>'
       : '<button type="button" class="linkbtn" id="siForgot">Forgot password?</button> \u00b7 New here? <button type="button" class="linkbtn" data-m="signup">Create account</button>';
     dlg.dataset.mode = m;
+    const legal = $('#siLegal', dlg);
+    legal.innerHTML = m === 'signup'
+      ? 'By creating an account you agree to the <a href="/terms.html">Terms</a> and the <a href="/privacy.html">Privacy Policy</a>.'
+      : '<a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy Policy</a>';
   };
   foot.addEventListener('click', async (e) => {
     const t = e.target.closest('button'); if (!t) return;
@@ -193,7 +198,7 @@ function initAccount() {
       const cancelling = s.cancelAtPeriodEnd || ent.cancelAtPeriodEnd;
       const d = end ? new Date(typeof end === 'number' && end < 1e12 ? end * 1000 : end) : null;
       const ds = d && !isNaN(d) ? d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-      detail.textContent = (s.cancelAtPeriodEnd && s.periodEnd && ds) ? `Plus stays on until ${ds}.` : isPlus ? (cancelling ? `Cancelled. Plus stays on until ${ds || 'the end of the paid period'}.` : (ds ? `Renews on ${ds}.` : 'Active. Open the app to link more banks.')) : 'Your first bank account is free. Plus lets you link more.';
+      detail.textContent = (s.cancelAtPeriodEnd && s.periodEnd && ds) ? `Plus stays on until ${ds}.` : isPlus ? (cancelling ? `Cancelled. Plus stays on until ${ds || 'the end of the paid period'}.` : (ds ? `Renews on ${ds}.` : 'Active. Open the app to link more banks.')) : 'Your first bank, with all its accounts, is free. Plus lets you link more banks.';
       box.dataset.status = JSON.stringify(s);
     } catch (x) { plan.textContent = 'Unknown'; detail.textContent = x.message; }
   });

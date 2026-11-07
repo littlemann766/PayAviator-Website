@@ -69,6 +69,7 @@ function viewSignin() {
     googleBtn, h('div', { class: 'or' }, h('span', { text: 'or use email' })),
     demo ? h('p', { class: 'msg', text: 'Email sign-in is disabled in demo mode.' }) : form,
     demo ? null : h('p', { class: 'alt' }, mode === 'signup' ? 'Already have an account? ' : 'New to PayAviator? ', h('button', { class: 'linkbtn', type: 'button', text: mode === 'signup' ? 'Sign in' : 'Create account', onclick: () => { mode = mode === 'signup' ? 'signin' : 'signup'; render(); } })),
+    mode === 'signup' ? h('p', { class: 'fine' }, 'By creating an account you agree to the ', h('a', { href: '../terms.html', text: 'Terms' }), ' and the ', h('a', { href: '../privacy.html', text: 'Privacy Policy' }), '.') : h('p', { class: 'fine' }, h('a', { href: '../terms.html', text: 'Terms' }), ' \u00b7 ', h('a', { href: '../privacy.html', text: 'Privacy Policy' })),
     h('p', { class: 'fine' }, icon('lock'), h('span', { text: 'Verify your email once after creating an account. Use the newest email we send.' })));
   shell(card);
 }

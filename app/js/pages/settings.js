@@ -40,10 +40,11 @@ async function openPortal() {
 
 function openDeleteAccount() {
   openSheet({
-    title: 'Delete your account', sub: 'This permanently deletes your PayAviator account, linked banks and synced data. It cannot be undone. Data on your phone stays until you delete it there. Subscriptions bought in Google Play or Stripe must be cancelled separately.',
+    title: 'Delete your account', sub: 'This permanently deletes your PayAviator account, linked banks and synced data. It cannot be undone. Data on your phone stays until you delete it there. If you have not signed in recently, nothing is deleted until you sign in again. Subscriptions bought in Google Play or on the web must be cancelled separately. Deleting this account does not cancel Plus.',
     submitText: 'Delete my account forever', values: { confirm: '' },
     fields: [{ name: 'confirm', label: 'Type DELETE to confirm', type: 'text', validate: (v) => (String(v).trim() === 'DELETE' ? null : 'Type DELETE in capital letters to continue.') }],
     onSubmit: async () => {
+      if (!auth.hasRecentLogin()) throw Object.assign(new Error(authMessage({ code: 'auth/requires-recent-login' })), { code: 'auth/requires-recent-login' });
       try { await api.deletePlaidUser(); } catch (e) { if (e.status !== 404) throw e; }
       try { await api.deleteAllCloud().catch(() => {}); await auth.deleteUser(); }
       catch (e) { throw Object.assign(new Error(authMessage(e) || 'Could not delete the account. Please try again or email support@payaviator.app.'), { code: e.code }); }
@@ -85,7 +86,7 @@ function render(main) {
     h('section', { class: 'card' }, h('div', { class: 'row-h' }, h('h2', { text: 'Help & legal' })), h('ul', { class: 'slist' },
       li('mail', 'Support', 'support@payaviator.app', h('a', { class: 'lnk', href: 'mailto:support@payaviator.app', text: 'Email us' })),
       li('doc', 'Privacy policy and Terms', 'How we handle your data', h('span', null, h('a', { class: 'lnk', href: '../privacy.html', text: 'Privacy' }), ' \u00b7 ', h('a', { class: 'lnk', href: '../terms.html', text: 'Terms' }))))),
-    h('section', { class: 'card danger' }, h('div', { class: 'row-h' }, h('h2', { text: 'Delete your data or account' })), h('p', { class: 'muted', text: 'Delete synced cloud data removes your bills, income, spending and budget from PayAviator\u2019s servers. Data on your phone stays until you clear it there. To delete your whole account, linked banks and all, use Delete account.' }),
+    h('section', { class: 'card danger', id: 'delete-account' }, h('div', { class: 'row-h' }, h('h2', { text: 'Delete your data or account' })), h('p', { class: 'muted', text: 'Delete synced cloud data removes your bills, income, spending and budget from PayAviator\u2019s servers. Data on your phone stays until you clear it there. To delete your whole account, linked banks and all, use Delete account.' }),
       h('div', { class: 'tb-r' }, h('button', { class: 'btn danger-o', type: 'button', 'data-act': 'delete-sync', onclick: async () => { if (!(await confirmDialog({ title: 'Delete synced data?', text: 'This removes your synced bills, income, spending and budget from the cloud. It cannot be undone.', confirmText: 'Delete synced data' }))) return; try { const r = await api.deleteAllCloud(); toast(`Deleted ${r.deleted} synced item${r.deleted === 1 ? '' : 's'}.`); await api.init({ uid: auth.user.uid, getToken: (f) => auth.getToken(f), demo: auth.demo }); } catch (e) { toast(e.message || 'Could not delete synced data.', 'warn'); } } }, icon('trash'), h('span', { text: 'Delete synced data' })),
         h('button', { class: 'btn danger', type: 'button', 'data-act': 'delete-account', onclick: openDeleteAccount }, icon('trash'), h('span', { text: 'Delete my account' }))))));
 }
