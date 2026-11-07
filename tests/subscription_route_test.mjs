@@ -43,7 +43,7 @@ const settings = readFileSync(new URL('../app/js/pages/settings.js', import.meta
 const portalCall = settings.slice(settings.indexOf('async function openManage'), settings.indexOf('function openDeleteAccount'));
 check('manage reads status then posts portal with no customer id', portalCall.includes('api.billingPortal()') && !portalCall.includes('customerId') && !portalCall.includes('customer_email'));
 check('delete warning is not a cancel gate', settings.includes('does not cancel a Stripe or Google Play subscription') && settings.includes("data-act': 'delete-account'") && settings.indexOf('hasRecentLogin') < settings.indexOf('deletePlaidUser'));
-check('delete sheet offers manage without removing delete', settings.includes("data-act': 'manage-from-delete'") && settings.includes('Delete my account forever'));
+check('delete sheet offers manage without removing delete', settings.includes("data-act': 'manage-from-delete'") && settings.includes("submitText: 'Delete account'") && !settings.includes('Type DELETE'));
 
 for (const rel of ['support.html', 'faq.html', 'terms.html']) {
   const text = readFileSync(new URL('../' + rel, import.meta.url), 'utf8');

@@ -331,9 +331,9 @@ def run():
         pg.goto(B + 'settings.html#plan'); pg.wait_for_selector('[data-act=portal]')
         check('settings has Plan & billing with Manage subscription and a Delete my account button', pg.locator('#plan').count() == 1 and pg.locator('[data-act=delete-account]').count() == 1)
         pg.click('[data-act=delete-account]'); pg.wait_for_selector('.sheet')
-        pg.locator('.sheet').get_by_role('button', name='Delete my account forever').click(); pg.wait_for_timeout(300)
-        check('delete account: blocked until DELETE is typed', '/signin.html' not in pg.url and pg.locator('.sheet').count() == 1)
-        pg.locator('.sheet input').first.fill('DELETE'); pg.locator('.sheet').get_by_role('button', name='Delete my account forever').click()
+        sheet = pg.inner_text('.sheet')
+        check('delete sheet: one confirm, billing and bank warning, no DELETE field', 'does not cancel a Stripe or Google Play subscription' in sheet and 'does not close those accounts at your bank' in sheet and pg.locator('.sheet input').count() == 0)
+        pg.locator('.sheet').get_by_role('button', name='Delete account').click()
         pg.wait_for_url('**/signin.html?deleted=1', timeout=8000)
         check('delete account: signs out, clears local data, shows confirmation', pg.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('pa_demo_server_v1:')).length") == 0)
         for u in ('account.html', 'account/index.html'):

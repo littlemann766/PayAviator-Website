@@ -130,7 +130,11 @@ export function openSheet({ title, sub, fields, values = {}, submitText = 'Save'
     if (firstBad) { (firstBad.el || firstBad.node.querySelector('input')).focus(); return; }
     const vals = {}; fields.forEach((f, i) => { vals[f.name] = built[i].get(); });
     submit.disabled = true; formErr.hidden = true;
-    try { const res = await onSubmit(vals, entry); entry.close(); savedToast(res); }
+    try {
+      const res = await onSubmit(vals, entry);
+      if (res && res.deleted) { location.replace('signin.html?deleted=1'); return; }
+      entry.close(); savedToast(res);
+    }
     catch (err) { submit.disabled = false; formErr.hidden = false; formErr.querySelector('span').textContent = (err && err.message) || 'Could not save. Please try again.'; }
   } },
     h('header', { class: 'sheet-h' }, h('div', null, h('h2', { id: tid, text: title }), sub ? h('p', { text: sub }) : null),

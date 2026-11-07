@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { auth, authMessage } from '../auth.js';
 import { planKey, planInfo, planCard, paintHeadingBadge } from '../plans.js';
 import { routeSubscription, manageFailure, safePortalUrl } from '../../../assets/subscription-route.js';
+import { beforeServerDelete, interpretPlaidDelete, deletionMessage } from '../delete-flow.js';
 import { openImport } from '../import.js';
 
 let rerender = () => {};
@@ -69,17 +70,30 @@ async function openManage() {
 }
 
 function openDeleteAccount() {
+  const startUid = auth.user && auth.user.uid;
   openSheet({
     title: 'Delete your account', sub: 'This deletes your PayAviator sign-in and asks PayAviator to remove every linked bank connection. It does not close those accounts at your bank. Deleting your PayAviator account does not cancel a Stripe or Google Play subscription. The subscription can keep renewing until you cancel it there. You do not have to cancel it first, and you are not asked why. If you have not signed in recently, nothing is deleted until you sign in again. Bills you entered on your phone stay there.',
     extra: h('p', { class: 's-note' }, h('button', { type: 'button', class: 'linkbtn', 'data-act': 'manage-from-delete', onclick: (ev) => { ev.preventDefault(); openManage(); } }, 'Manage or cancel subscription')),
-    submitText: 'Delete my account forever', values: { confirm: '' },
-    fields: [{ name: 'confirm', label: 'Type DELETE to confirm', type: 'text', validate: (v) => (String(v).trim() === 'DELETE' ? null : 'Type DELETE in capital letters to continue.') }],
+    submitText: 'Delete account', fields: [],
     onSubmit: async () => {
-      if (!auth.hasRecentLogin()) throw Object.assign(new Error(authMessage({ code: 'auth/requires-recent-login' })), { code: 'auth/requires-recent-login' });
-      try { await api.deletePlaidUser(); } catch (e) { if (e.status !== 404) throw e; }
-      try { await api.deleteAllCloud().catch(() => {}); await auth.deleteUser(); }
-      catch (e) { throw Object.assign(new Error(authMessage(e) || 'Could not delete the account. Please try again or email support@payaviator.app.'), { code: e.code }); }
-      api.clearLocal(); location.replace('signin.html?deleted=1');
+      const gate = beforeServerDelete({ recent: auth.hasRecentLogin(), startUid, currentUid: auth.user && auth.user.uid });
+      if (!gate.go) throw Object.assign(new Error(deletionMessage(gate.code)), { code: gate.code });
+      let plaid;
+      try { plaid = await api.deletePlaidUser(); }
+      catch (e) {
+        const read = interpretPlaidDelete(null, e);
+        throw Object.assign(new Error(deletionMessage(read.code)), { code: read.code });
+      }
+      const read = interpretPlaidDelete(plaid, null);
+      if (!read.ok) throw Object.assign(new Error(deletionMessage(read.code)), { code: read.code });
+      if (!auth.user || auth.user.uid !== startUid) throw Object.assign(new Error(deletionMessage('USER_CHANGED')), { code: 'USER_CHANGED' });
+      try { await auth.deleteUser(); }
+      catch (e) {
+        const code = /requires-recent-login/.test((e && e.code) || '') ? 'REQUIRES_RECENT_LOGIN' : 'DELETE_FAILED';
+        throw Object.assign(new Error(deletionMessage(code)), { code });
+      }
+      api.clearLocal();
+      return { deleted: true };
     },
   });
 }
