@@ -227,7 +227,7 @@ def main():
 
     # Internal links on the pages this review edited.
     pages = [
-        'index.html', 'privacy.html', 'terms.html', 'delete-account.html', 'pricing.html',
+        'index.html', 'privacy.html', 'terms.html', 'delete-account.html', 'pricing.html', 'review/index.html',
         'faq.html', 'how-it-works.html', 'support.html', 'subscribe.html', 'account.html',
         'account/index.html', 'billing/success.html', 'billing/cancel.html', 'auth/action.html',
     ]
@@ -278,6 +278,22 @@ def main():
         fail('delete page no longer says the support aim is not a wait for deletion')
     else:
         ok('delete page keeps one line that support timing is not a deletion wait')
+    review = read('review/index.html')
+    robots = read('robots.txt')
+    if 'noindex, nofollow' not in review or '2026-11a-draft' not in review or '2026-10g' not in review:
+        fail('lawyer review page is missing noindex or version labels')
+    elif 'not a compliance claim' not in review:
+        fail('lawyer review page could be read as a compliance claim')
+    elif re.search(r'assistant|Ask PayAviator|artificial intelligence', review + privacy + terms + faq + read('support.html'), re.I):
+        fail('AI or an assistant is still described on a review or policy page')
+    elif re.search(r'\bmother\b|co-owner|incorporated|C&R Digital', review + privacy + terms, re.I):
+        fail('review or policy names a co-owner or an already formed company')
+    elif '/review/' in read('sitemap.xml'):
+        fail('sitemap includes the lawyer review route')
+    elif 'Disallow: /review/' not in robots:
+        fail('robots.txt does not keep /review/ out')
+    else:
+        ok('lawyer review route is noindex and separate from the live policy')
     if 'not described here as what the app does today' not in delete:
         fail('disconnect draft describes an unverified fix as shipped')
     else:
