@@ -116,22 +116,40 @@ def main():
     settings = read('app/js/pages/settings.js')
     auth = read('app/js/auth.js')
 
-    if '2026-11a-draft' not in privacy or 'not effective' not in privacy.lower():
-        fail('privacy draft is not marked unpublished / not effective')
-    elif '2026-10g' not in privacy or 'October 17, 2026' not in privacy:
-        fail('privacy no longer identifies the live 2026-10g policy')
-    elif 'POLICY_VERSION' not in privacy or '2026-11a' not in privacy:
-        fail('privacy does not name the publication version the app must match')
+    if '2026-11a-draft' in privacy or 'not effective' in privacy.lower():
+        fail('privacy still reads as an unpublished draft')
+    elif 'Version:</strong> 2026-11a' not in privacy or 'November 9, 2026' not in privacy:
+        fail('privacy is not version 2026-11a effective November 9, 2026')
+    elif 'privacy-2026-10g.html' not in privacy or 'does not change the version stored on that phone' not in privacy:
+        fail('privacy does not keep the 2026-10g archive or the old-install consent line')
+    elif '420600' not in privacy:
+        fail('privacy does not name the active closed-test version code')
     else:
-        ok('privacy is draft 2026-11a-draft and still names live 2026-10g')
-    if 'October 15, 2026' not in terms or 'not effective' not in terms.lower() or '2026-11a-draft' not in terms:
-        fail('terms draft notice missing published date or draft id')
+        ok('privacy is 2026-11a and keeps 2026-10g for older installs')
+    if 'Version:</strong> 2026-11a' not in terms or 'November 9, 2026' not in terms or 'terms-2026-10-15.html' not in terms:
+        fail('terms are not 2026-11a with the October 15 archive link')
+    elif 'not effective' in terms.lower() or '2026-11a-draft' in terms:
+        fail('terms still read as an unpublished draft')
     else:
-        ok('terms keep October 15, 2026 and mark the clarification as not effective')
-    if '2026-11a-draft' not in delete or 'not effective' not in delete.lower():
-        fail('delete-account page is not marked as an unpublished draft')
+        ok('terms are 2026-11a and link the October 15 archive')
+    if 'Version:</strong> 2026-11a' not in delete or 'privacy-2026-10g.html' not in delete:
+        fail('delete-account page is not tied to 2026-11a and the archive')
+    elif '2026-11a-draft' in delete or 'not effective' in delete.lower():
+        fail('delete-account page still reads as an unpublished draft')
     else:
-        ok('delete-account page is marked unpublished')
+        ok('delete-account page is version 2026-11a')
+    archived = read('privacy-2026-10g.html')
+    old_terms = read('terms-2026-10-15.html')
+    if 'Policy version:</strong> 2026-10g' not in archived or 'October 17, 2026' not in archived or 'id="archive-notice"' not in archived:
+        fail('2026-10g archive is missing or was rewritten past recognition')
+    elif 'kept for 30 days' not in archived:
+        fail('2026-10g archive no longer contains the original cooldown sentence')
+    else:
+        ok('privacy 2026-10g archive preserves the published text')
+    if 'October 15, 2026' not in old_terms or 'id="archive-notice"' not in old_terms:
+        fail('October 15 terms archive is missing')
+    else:
+        ok('October 15 terms archive is present')
 
     for rel, text in (('privacy.html', privacy), ('terms.html', terms), ('faq.html', faq), ('pricing.html', pricing), ('assets/billing.js', read('assets/billing.js')), ('assets/subscribe.js', read('assets/subscribe.js'))):
         if '$3.99' not in text or '$29.99' not in text:
@@ -174,8 +192,8 @@ def main():
         'does not start a Google Play purchase',
         'cloud project number is 0',
         'not used for bill reminders',
-        'does not promise a 30-day production cooldown',
-        'id="draft-notice"',
+        'does not promise that the production setting is 30 days',
+        'does not change the version stored on that phone',
     ):
         if needle not in privacy:
             fail('privacy missing: ' + needle)
@@ -228,6 +246,7 @@ def main():
     # Internal links on the pages this review edited.
     pages = [
         'index.html', 'privacy.html', 'terms.html', 'delete-account.html', 'pricing.html', 'review/index.html',
+        'privacy-2026-10g.html', 'terms-2026-10-15.html',
         'faq.html', 'how-it-works.html', 'support.html', 'subscribe.html', 'account.html',
         'account/index.html', 'billing/success.html', 'billing/cancel.html', 'auth/action.html',
     ]
@@ -261,10 +280,16 @@ def main():
     site = read('sitemap.xml')
     for loc in ('/', '/privacy.html', '/terms.html', '/delete-account.html', '/pricing.html', '/faq.html', '/how-it-works.html', '/support.html'):
         block = re.search(r'<loc>https://payaviator\.app' + re.escape(loc) + r'</loc><lastmod>([^<]+)</lastmod>', site)
-        if not block or block.group(1) != '2026-11-07':
-            fail(f'sitemap lastmod for {loc} is not 2026-11-07')
+        if not block or block.group(1) != '2026-11-09':
+            fail(f'sitemap lastmod for {loc} is not 2026-11-09')
         else:
-            ok(f'sitemap {loc} lastmod 2026-11-07')
+            ok(f'sitemap {loc} lastmod 2026-11-09')
+    for loc, day in (('/privacy-2026-10g.html', '2026-10-17'), ('/terms-2026-10-15.html', '2026-10-15')):
+        block = re.search(r'<loc>https://payaviator\.app' + re.escape(loc) + r'</loc><lastmod>([^<]+)</lastmod>', site)
+        if not block or block.group(1) != day:
+            fail(f'sitemap lastmod for {loc} is not {day}')
+        else:
+            ok(f'sitemap {loc} lastmod {day}')
     support = read('support.html')
     plain = 'PayAviator is independently operated. Support is not monitored continuously. We aim to respond to support requests within 72 hours. Some issues require additional investigation and may take longer to resolve. For urgent banking issues or suspected fraud, contact your bank directly.'
     for rel, text in (('support.html', support), ('faq.html', faq), ('terms.html', terms)):
@@ -280,20 +305,30 @@ def main():
         ok('delete page keeps one line that support timing is not a deletion wait')
     review = read('review/index.html')
     robots = read('robots.txt')
-    if 'noindex, nofollow' not in review or '2026-11a-draft' not in review or '2026-10g' not in review:
-        fail('lawyer review page is missing noindex or version labels')
-    elif 'not a compliance claim' not in review:
-        fail('lawyer review page could be read as a compliance claim')
-    elif re.search(r'assistant|Ask PayAviator|artificial intelligence', review + privacy + terms + faq + read('support.html'), re.I):
+    if 'noindex, nofollow' not in review or '2026-11a' not in review or '2026-10g' not in review:
+        fail('review map is missing noindex or version labels')
+    elif '2026-11a-draft' in review:
+        fail('review map still says 2026-11a-draft')
+    elif 'not a compliance certification' not in review:
+        fail('review map could be read as a compliance certification')
+    elif review.count('<li>') < 5 or 'Five questions' not in review:
+        fail('review map is missing the five questions')
+    elif 'forming an Ohio LLC alone' not in review or 'not registered' not in review:
+        fail('review map does not say the Ohio LLC is unregistered and formed alone')
+    elif '420600' not in review or 'not a production release' not in review and 'Production is not eligible' not in review:
+        fail('review map does not record the closed-test build or the production hold')
+    elif re.search(r'assistant|Ask PayAviator|artificial intelligence|\bAI\b', review + privacy + terms + faq + read('support.html')):
         fail('AI or an assistant is still described on a review or policy page')
     elif re.search(r'\bmother\b|co-owner|incorporated|C&R Digital', review + privacy + terms, re.I):
         fail('review or policy names a co-owner or an already formed company')
+    elif re.search(r'OPPA|immunity|exclusive venue|twelve month|liability is limited', privacy + terms, re.I):
+        fail('privacy or terms adds a rejected legal term')
     elif '/review/' in read('sitemap.xml'):
         fail('sitemap includes the lawyer review route')
     elif 'Disallow: /review/' not in robots:
         fail('robots.txt does not keep /review/ out')
     else:
-        ok('lawyer review route is noindex and separate from the live policy')
+        ok('review map is noindex, asks five questions, and keeps the old policy')
     if 'not described here as what the app does today' not in delete:
         fail('disconnect draft describes an unverified fix as shipped')
     else:
