@@ -119,6 +119,19 @@ export const auth = {
     const u = A.auth && A.auth.currentUser; if (!u) throw Object.assign(new Error('Signed out'), { code: 'SIGNIN' });
     return u.getIdToken(force);
   },
+  /**
+   * True when Firebase last signed this user in within 4 minutes.
+   * Matches Android FirebaseSignIn.RECENT_LOGIN_MS so bank data is not removed
+   * and then left behind a sign-in that Firebase will refuse to delete.
+   * Demo mode has no Firebase user and is always treated as recent.
+   */
+  hasRecentLogin() {
+    if (A.demo) return true;
+    const u = A.auth && A.auth.currentUser;
+    if (!u || !u.metadata) return false;
+    const t = Date.parse(u.metadata.lastSignInTime || '');
+    return Number.isFinite(t) && (Date.now() - t) < 4 * 60 * 1000;
+  },
   /** Permanently delete the Firebase user. Throws code 'auth/requires-recent-login' if the sign-in is too old. */
   async deleteUser() {
     if (A.demo) { await this.signOut(); return; }

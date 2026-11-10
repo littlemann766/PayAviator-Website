@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
+Disallow: /review/
 Sitemap: https://payaviator.app/sitemap.xml
