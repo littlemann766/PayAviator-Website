@@ -491,3 +491,25 @@ details.more-d[open]>summary{margin-bottom:8px}
   .navlinks a.nav-signup{padding:7px clamp(12px,1vw,18px)}
   .navlinks .btn.primary{margin-left:clamp(14px,2vw,40px)}
 }
+
+/* Screenshot gallery: desktop prev/next, grab cursor; phone swipe unchanged */
+.car-stage{position:relative;display:flex;align-items:center;gap:8px}
+.car-stage .swipe{flex:1;min-width:0}
+.car-band .swipe{cursor:grab;-webkit-overflow-scrolling:touch}
+.car-band .swipe.dragging{cursor:grabbing;scroll-snap-type:none;user-select:none}
+.car-band .swipe.dragging *{pointer-events:none}
+.car-band .swipe figure,.car-band .swipe img{-webkit-user-drag:none;user-select:none}
+.car-btn{flex:none;width:44px;height:44px;border:0;border-radius:50%;padding:0;cursor:pointer;display:grid;place-items:center;background:rgba(22,228,234,.95);color:var(--navy);box-shadow:0 8px 18px rgba(0,0,0,.22)}
+.car-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.car-btn:hover{background:#fff}
+.car-btn:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.car-btn:disabled{opacity:.38;cursor:default;box-shadow:none}
+.car-dots i{cursor:pointer}
+@media (max-width:640px){
+  .car-btn{display:none}
+  .car-stage{display:block;gap:0}
+}
+@media (min-width:641px){
+  .swipe-hint{font-size:0;color:transparent}
+  .swipe-hint::after{content:attr(data-desktop);font-size:14px;font-weight:800;color:var(--amber)}
+}
